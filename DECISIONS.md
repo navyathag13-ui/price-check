@@ -62,7 +62,7 @@ supersedes it. Matching in Phase 5 must record which release it used.
 ## ADR-006: Layout is per-file, not per-hospital; parsers must be layout-agnostic and BOM-safe
 **Decision.** Phase 2 gets one parser per layout (tall CSV, wide CSV, JSON) plus a per-source contract,
 selected from the profile, not assumed from the hospital.
-**Evidence (measured, see `docs/phase1_report.md`).** Of 20 profiled files: 14 tall CSV, 2 wide CSV
+**Evidence (measured, see `docs/phase1_report.md`).** Of 20 profiled files: 12 tall CSV, 2 wide CSV
 (NYU Tisch, MD Anderson), 6 JSON (incl. MSK, Providence, Stanford, UCSF, UChicago, Cedars-Sinai). Declared
 template version is 3.0.0 everywhere except **Cedars-Sinai, still on 2.0.0** despite the 2026 v3 deadline.
 Three JSON files (Stanford, UCSF, UChicago) begin with a UTF-8 byte-order mark that the streaming JSON
