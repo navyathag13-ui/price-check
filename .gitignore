@@ -12,3 +12,8 @@ data/quarantine/
 data/sample/
 data/*.log
 data/alerts.jsonl
+data/delta/
+data/sandbox_repro/
+data/tmp/
+data/*.jsonl
+data/silver_run_log_BEFORE_fix.jsonl

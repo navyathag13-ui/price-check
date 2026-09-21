@@ -97,8 +97,11 @@ promotion. Contracts were *derived from the real headers*, which surfaced the `b
 Tall CSV repeats gross/cash/min/max on every payer row, so generic prices are emitted once per *consecutive* item.
 **Alternatives rejected.** Keeping wide (NYU has 3,733 columns; not queryable across hospitals); one row per
 item with a payer array (harder to MERGE and to compare). Amounts as float (money); decimal is used.
-**Known approximation.** Consecutive-dedupe assumes an item's rows are adjacent. If a hospital interleaves
-items, generic prices would be emitted more than once (harmless duplicates, not lost data); not measured.
+**Correction (found in Phase 3).** This ADR originally emitted generic prices once per *consecutive item* and claimed
+any error would only be harmless duplicates. That was wrong: in UnityPoint Iowa Methodist one HCPCS drug code (J1885)
+appears in 117 adjacent rows (one per NDC) with *different* gross prices ($0.90, $2.20, $65.34, $88.94...), and the
+parser dropped every one after the first. Fixed: generic prices are emitted on every row and exact duplicates are
+collapsed in the history staging step (ADR-010). Regression test: `test_tall_generic_prices_are_never_dropped...`.
 **Not loaded (counted, not hidden).** Percentage/algorithm-only negotiated charges, estimated amounts and
 percentiles are outside the five required price types; counts are in `run_log.jsonl`.
 
@@ -107,3 +110,45 @@ percentiles are outside the five required price types; counts are in `run_log.js
 2. JSON parser assumed a `peek`-able stream; caught by a `BytesIO` unit test.
 3. Reading real files: NYU/OHSU/MD Anderson contain non-UTF-8 bytes (cp1252). Decoded per-byte with a counting fallback (NYU 45, OHSU 293, MD Anderson 25 bytes) instead of `errors="replace"`, which had silently hidden them in Phase 1.
 4. `rejects.parquet` beside data parts broke a plain glob over the table; moved to a `rejects/` subfolder.
+
+---
+
+## ADR-010: History = SCD Type 2 rows in a Delta table, loaded by MERGE; snapshots, not deltas
+**Decision.** `price_history` (Delta, partitioned by `hospital_slug`) keeps one row per *version* of each price fact
+with `effective_from`, `effective_to`, `is_current`, `closed_by_source_sha256`, `change_reason` (changed|removed).
+A hospital file is a full snapshot, so loading a new hash computes the diff against that hospital's current rows and
+runs one MERGE on the surrogate `row_id`: close changed/removed rows, insert new versions and new keys; unchanged rows
+are never rewritten. First sight of a hospital is a plain append. A `(slug, sha)` already in `ingestion_ledger` is skipped
+(idempotent); an identical snapshot under a new hash is a recorded no-op with no new table version.
+**Identity of a price fact** = hospital, description, code, code_type, setting, billing_class, payer, plan, price_type
+(+`dup_seq`). Same key with different amounts (a hospital listing a line twice at two prices) keeps *both*, ordered by
+amount, instead of picking one. Description is part of identity: a hospital retyping a description shows as remove+add
+(accepted; alternative of excluding it would merge unrelated lines that share a CDM code).
+**Alternatives rejected.** Overwriting current state (loses history); append-only snapshots with no keys (cannot answer
+"what changed" without a full diff every query, and 5x the storage); Spark for this step (delta-rs + DuckDB did the whole
+real load in minutes on a laptop; Spark comparison is Phase 6, not assumed).
+**Why two time-travel mechanisms.** Delta versions give exact table state; SCD columns give business-time queries.
+The reproducibility script checks that they agree.
+
+## ADR-011: Reads go through DuckDB's native Delta reader, not a delta-rs pyarrow dataset
+**Evidence (a failure, not a preference).** After the first MERGE, delta-rs writes string columns as Arrow `string_view`;
+registering `DeltaTable.to_pyarrow_dataset()` in DuckDB then failed with `Function 'greater_equal' has no kernel matching
+input types (string, string_view)`. DuckDB's `delta_scan(path, version=N)` reads the same table correctly, including
+time travel (version 0 returned the original 685,917 rows after a merge), so all reads use it. Regression test:
+`test_two_consecutive_merges_then_time_travel`.
+
+## ADR-012: Reproducibility is proven with a script whose failure is possible
+`scripts/prove_reproducibility.py` loads a real hospital as version 1, records a report (Delta version + SHA-256 of the
+output bytes), ingests a version 2, then requires: the latest-state report **differs** (so the test is not vacuous), the
+recorded report re-runs **byte-identical** via time travel, and an independent SCD-column point-in-time query gives the
+same bytes. **Limit, stated plainly:** version 2 is *synthetic* (2% of prices +10%, 1% removed, 1% new lines derived from
+the real file, flagged `synthetic=true` in the ledger) because we hold only one real version per hospital so far. It proves
+the mechanism, not how hospitals actually change files. Real second versions will flow through the same code.
+**Not covered:** `VACUUM` deletes old files and would break time travel beyond the retention window; retention is not yet
+configured (Phase 6/8).
+
+## ADR-013: Observations from the first real report that later phases must handle
+From the recorded real report (`reports/outputs/91f166ac89a2.csv`, Delta version 20):
+- Hospitals label the *same* numeric procedure code with different `code_type` (CPT at 15 hospitals, HCPCS at 7 for code 11043). Code type is not a reliable identity; the gold layer must key on the code string and treat CPT/HCPCS Level I as one namespace.
+- Spreads are wide and include implausible lows: CPT 11043 negotiated ranges $0.25 to $40,293 (median $81.36). Not judged here; it is the input to Phase 4's anomaly work.
+- Storage: the history Delta table is 4.1 GB versus 1.0 GB for the zstd silver Parquet it came from (Delta written with default compression, unoptimised). Not yet compacted or re-compressed; that is Phase 6 and will be measured, not assumed.
