@@ -59,3 +59,9 @@ def test_ragged_rows_are_counted_not_hidden(tmp_path, monkeypatch):
     monkeypatch.setattr(profile, "ROOT", tmp_path)
     r = run(tmp_path, "r.csv", TALL + "only,two\n", None)
     assert r["ragged_rows"] == 1
+
+
+def test_json_with_utf8_bom(tmp_path, monkeypatch):
+    monkeypatch.setattr(profile, "ROOT", tmp_path)
+    r = run(tmp_path, "bom.json", b"\xef\xbb\xbf" + json.dumps(JSON_DOC).encode(), None)
+    assert r["layout"] == "json" and r["standard_charge_items"] == 2

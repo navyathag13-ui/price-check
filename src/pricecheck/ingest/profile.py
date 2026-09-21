@@ -91,6 +91,9 @@ def profile_file(path: Path) -> dict:
     with open_payload(path) as (stream, inner, container):
         buffered = io.BufferedReader(stream, 1 << 20) if not hasattr(stream, "peek") else stream
         head = buffered.peek(16)[:16]
+        if head.startswith(b"\xef\xbb\xbf"):  # UTF-8 BOM: valid text, but yajl rejects it
+            buffered.read(3)
+            head = buffered.peek(16)[:16]
         body = profile_json(buffered) if sniff_json(head) else profile_csv(buffered)
     return {"file": str(path.relative_to(ROOT)), "inner_name": inner, "container": container, **body,
             "profile_seconds": round(time.monotonic() - t0, 1)}

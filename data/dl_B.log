@@ -1,0 +1,5 @@
+unitypoint-iowa-methodist    stored                   241.1 MB 371.85s 
+unitypoint-allen             stored                   176.8 MB 212.61s 
+unitypoint-finley            stored                   190.9 MB 181.07s 
+sanford-usd                  stored                  1007.4 MB 644.86s 
+atrium-cmc                   failed                     0.0 MB -s ChunkedEncodingError: ("Connection broken: BrokenPipeError(32, 'Broken pipe')", BrokenPipeError(32, 'Broken pipe'))
