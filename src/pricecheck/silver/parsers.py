@@ -84,7 +84,6 @@ def parse_tall(stream, ctx: Ctx) -> Iterator[Reject | dict]:
     cols = next(r)
     idx = {c: i for i, c in enumerate(cols)}
     n_codes = [k for k in range(1, 10) if f"code|{k}" in idx]
-    prev = None
     for n, row in enumerate(r, start=1):
         ctx.stats.rows_in += 1
         if len(row) != len(cols):
@@ -96,15 +95,14 @@ def parse_tall(stream, ctx: Ctx) -> Iterator[Reject | dict]:
         if isinstance(base, Reject):
             yield base
             continue
-        key = base[:2] + base[4:6]
-        emit_generic = key != prev      # generic prices repeat on every payer row; emit once per consecutive item
-        prev = key
         mods = g("modifiers")
-        if emit_generic:
-            for ptype, col in GENERIC_TALL.items():
-                out = ctx.price(n, base, None, None, ptype, g(col), col, mods=mods)
-                if out is not None:
-                    yield out
+        # Generic prices are emitted on EVERY row. They repeat across payer rows (exact duplicates are collapsed in the
+        # history staging step), but rows for one code can carry *different* generic prices (e.g. one HCPCS drug code
+        # listed per NDC with a different gross price), so deduplicating here by "same item key" silently lost data.
+        for ptype, col in GENERIC_TALL.items():
+            out = ctx.price(n, base, None, None, ptype, g(col), col, mods=mods)
+            if out is not None:
+                yield out
         payer = g("payer_name")
         if payer:
             out = ctx.price(n, base, payer, g("plan_name") or None, "negotiated", g("standard_charge|negotiated_dollar"),

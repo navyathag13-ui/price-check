@@ -25,12 +25,14 @@ TALL_COLS = ("description,code|1,code|1|type,code|2,code|2|type,setting,billing_
              "standard_charge|negotiated_percentage,standard_charge|min,standard_charge|max\n")
 
 
-def test_tall_generic_prices_emitted_once_per_consecutive_item():
+def test_tall_generic_prices_are_never_dropped_even_when_item_key_repeats():
+    """Regression: adjacent rows with the same item key but DIFFERENT gross prices must both survive."""
     rows = ("Asp,123,CPT,9,CDM,outpatient,facility,10,8,A,PPO,7,,1,20\n"
-            "Asp,123,CPT,9,CDM,outpatient,facility,10,8,B,HMO,6,,1,20\n")
+            "Asp,123,CPT,9,CDM,outpatient,facility,65.34,52,B,HMO,6,,1,28\n")
     out, ctx = run(parse_tall, (TALL_HEAD + TALL_COLS + rows).encode(), "csv_tall")
-    kinds = [(r["price_type"], r["payer"]) for r in out]
-    assert kinds.count(("gross", None)) == 1 and ("negotiated", "A") in kinds and ("negotiated", "B") in kinds
+    gross = sorted(r["amount"] for r in out if r["price_type"] == "gross")
+    assert gross == [Decimal("10"), Decimal("65.34")]
+    assert ("negotiated", "A") in [(r["price_type"], r["payer"]) for r in out]
     assert all(r["code"] == "123" and r["code_type"] == "CPT" and r["alt_codes"] == "CDM:9" for r in out)
     assert ctx.stats.rows_in == 2
 
