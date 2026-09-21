@@ -1,0 +1,12 @@
+[project]
+name = "pricecheck"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["requests", "pyyaml", "ijson", "pydantic"]
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+[tool.setuptools.packages.find]
+where = ["src"]
+[tool.pytest.ini_options]
+pythonpath = ["src"]

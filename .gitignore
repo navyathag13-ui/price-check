@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+data/bronze/*/
+data/bronze/_incoming/
+data/silver/
+data/gold/
+data/reference/*.zip
+.env
+*.part

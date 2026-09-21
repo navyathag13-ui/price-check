@@ -1,0 +1,9 @@
+pyproject.toml
+src/pricecheck/__init__.py
+src/pricecheck.egg-info/PKG-INFO
+src/pricecheck.egg-info/SOURCES.txt
+src/pricecheck.egg-info/dependency_links.txt
+src/pricecheck.egg-info/requires.txt
+src/pricecheck.egg-info/top_level.txt
+src/pricecheck/ingest/__init__.py
+src/pricecheck/ingest/download.py
