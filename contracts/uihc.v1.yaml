@@ -1,0 +1,61 @@
+source: uihc
+contract_version: 1
+layout: csv_tall
+accepted_template_versions:
+- 3.0.0
+deprecated_template_versions: []
+required_columns:
+- description
+- code|1
+- code|1|type
+- setting
+- billing_class
+- standard_charge|gross
+- standard_charge|discounted_cash
+- payer_name
+- plan_name
+- standard_charge|negotiated_dollar
+- standard_charge|min
+- standard_charge|max
+expected_fixed_columns:
+- description
+- code|1
+- code|1|type
+- code|2
+- code|2|type
+- code|3
+- code|3|type
+- code|4
+- code|4|type
+- billing_class
+- setting
+- drug_unit_of_measurement
+- drug_type_of_measurement
+- standard_charge|gross
+- standard_charge|discounted_cash
+- payer_name
+- plan_name
+- modifiers
+- standard_charge|negotiated_dollar
+- standard_charge|negotiated_percentage
+- standard_charge|negotiated_algorithm
+- median_amount
+- 10th_percentile
+- 90th_percentile
+- count
+- standard_charge|min
+- standard_charge|max
+- standard_charge|methodology
+- additional_generic_notes
+known_deviations: []
+allowed_settings:
+- inpatient
+- outpatient
+- both
+allowed_billing_classes:
+- facility
+- professional
+- both
+amount_max: '100000000'
+max_reject_rate: 0.2
+min_data_rows: 1

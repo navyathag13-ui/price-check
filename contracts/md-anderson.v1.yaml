@@ -1,0 +1,244 @@
+source: md-anderson
+contract_version: 1
+layout: csv_wide
+accepted_template_versions:
+- 3.0.0
+deprecated_template_versions: []
+required_columns:
+- description
+- code|1
+- code|1|type
+- setting
+- billing_class
+- standard_charge|gross
+- standard_charge|discounted_cash
+- standard_charge|min
+- standard_charge|max
+expected_fixed_columns:
+- description
+- code|1
+- code|1|type
+- code|2
+- code|2|type
+- code|3
+- code|3|type
+- modifiers
+- setting
+- billing_class
+- drug_unit_of_measurement
+- drug_type_of_measurement
+- standard_charge|gross
+- standard_charge|discounted_cash
+- standard_charge|min
+- standard_charge|max
+- standard_charge|Danish_Health_Authority_Inpatient_Rate|negotiated_dollar
+- standard_charge|Danish_Health_Authority_Inpatient_Rate|negotiated_percentage
+- standard_charge|Danish_Health_Authority_Inpatient_Rate|negotiated_algorithm
+- median_amount|Danish_Health_Authority_Inpatient_Rate
+- 10th_percentile|Danish_Health_Authority_Inpatient_Rate
+- 90th_percentile|Danish_Health_Authority_Inpatient_Rate
+- count|Danish_Health_Authority_Inpatient_Rate
+- standard_charge|Danish_Health_Authority_Inpatient_Rate|methodology
+- additional_payer_notes|Danish_Health_Authority_Inpatient_Rate
+- standard_charge|Danish_Health_Authority_Outpatient_Rate|negotiated_dollar
+- standard_charge|Danish_Health_Authority_Outpatient_Rate|negotiated_percentage
+- standard_charge|Danish_Health_Authority_Outpatient_Rate|negotiated_algorithm
+- median_amount|Danish_Health_Authority_Outpatient_Rate
+- 10th_percentile|Danish_Health_Authority_Outpatient_Rate
+- 90th_percentile|Danish_Health_Authority_Outpatient_Rate
+- count|Danish_Health_Authority_Outpatient_Rate
+- standard_charge|Danish_Health_Authority_Outpatient_Rate|methodology
+- additional_payer_notes|Danish_Health_Authority_Outpatient_Rate
+- standard_charge|Danish_Health_Authority_Professional_Rate|negotiated_dollar
+- standard_charge|Danish_Health_Authority_Professional_Rate|negotiated_percentage
+- standard_charge|Danish_Health_Authority_Professional_Rate|negotiated_algorithm
+- median_amount|Danish_Health_Authority_Professional_Rate
+- 10th_percentile|Danish_Health_Authority_Professional_Rate
+- 90th_percentile|Danish_Health_Authority_Professional_Rate
+- count|Danish_Health_Authority_Professional_Rate
+- standard_charge|Danish_Health_Authority_Professional_Rate|methodology
+- additional_payer_notes|Danish_Health_Authority_Professional_Rate
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Inpatient_Rate|negotiated_dollar
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Inpatient_Rate|negotiated_percentage
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Inpatient_Rate|negotiated_algorithm
+- median_amount|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Inpatient_Rate
+- 10th_percentile|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Inpatient_Rate
+- 90th_percentile|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Inpatient_Rate
+- count|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Inpatient_Rate
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Inpatient_Rate|methodology
+- additional_payer_notes|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Inpatient_Rate
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Outpatient_Rate|negotiated_dollar
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Outpatient_Rate|negotiated_percentage
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Outpatient_Rate|negotiated_algorithm
+- median_amount|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Outpatient_Rate
+- 10th_percentile|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Outpatient_Rate
+- 90th_percentile|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Outpatient_Rate
+- count|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Outpatient_Rate
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Outpatient_Rate|methodology
+- additional_payer_notes|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_ Outpatient_Rate
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MD_Rate|negotiated_dollar
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MD_Rate|negotiated_percentage
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MD_Rate|negotiated_algorithm
+- median_amount|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MD_Rate
+- 10th_percentile|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MD_Rate
+- 90th_percentile|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MD_Rate
+- count|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MD_Rate
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MD_Rate|methodology
+- additional_payer_notes|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MD_Rate
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MLP_Rate|negotiated_dollar
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MLP_Rate|negotiated_percentage
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MLP_Rate|negotiated_algorithm
+- median_amount|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MLP_Rate
+- 10th_percentile|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MLP_Rate
+- 90th_percentile|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MLP_Rate
+- count|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MLP_Rate
+- standard_charge|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MLP_Rate|methodology
+- additional_payer_notes|UT_CARE_&_TEXAS_ A&M_ 65_ PLUS_ Medicare_ Advantage_Professional_MLP_Rate
+- standard_charge|World_Trade_Center_ Inpatient_Rate|negotiated_dollar
+- standard_charge|World_Trade_Center_ Inpatient_Rate|negotiated_percentage
+- standard_charge|World_Trade_Center_ Inpatient_Rate|negotiated_algorithm
+- median_amount|World_Trade_Center_ Inpatient_Rate
+- 10th_percentile|World_Trade_Center_ Inpatient_Rate
+- 90th_percentile|World_Trade_Center_ Inpatient_Rate
+- count|World_Trade_Center_ Inpatient_Rate
+- standard_charge|World_Trade_Center_ Inpatient_Rate|methodology
+- additional_payer_notes|World_Trade_Center_ Inpatient_Rate
+- standard_charge|World_Trade_Center_ Outpatient_Rate|negotiated_dollar
+- standard_charge|World_Trade_Center_ Outpatient_Rate|negotiated_percentage
+- standard_charge|World_Trade_Center_ Outpatient_Rate|negotiated_algorithm
+- median_amount|World_Trade_Center_ Outpatient_Rate
+- 10th_percentile|World_Trade_Center_ Outpatient_Rate
+- 90th_percentile|World_Trade_Center_ Outpatient_Rate
+- count|World_Trade_Center_ Outpatient_Rate
+- standard_charge|World_Trade_Center_ Outpatient_Rate|methodology
+- additional_payer_notes|World_Trade_Center_ Outpatient_Rate
+- standard_charge|World_Trade_Center_Professional_MD_Rate|negotiated_dollar
+- standard_charge|World_Trade_Center_Professional_MD_Rate|negotiated_percentage
+- standard_charge|World_Trade_Center_Professional_MD_Rate|negotiated_algorithm
+- median_amount|World_Trade_Center_Professional_MD_Rate
+- 10th_percentile|World_Trade_Center_Professional_MD_Rate
+- 90th_percentile|World_Trade_Center_Professional_MD_Rate
+- count|World_Trade_Center_Professional_MD_Rate
+- standard_charge|World_Trade_Center_Professional_MD_Rate|methodology
+- additional_payer_notes|World_Trade_Center_Professional_MD_Rate
+- standard_charge|World_Trade_Center_Professional_MLP_Rate|negotiated_dollar
+- standard_charge|World_Trade_Center_Professional_MLP_Rate|negotiated_percentage
+- standard_charge|World_Trade_Center_Professional_MLP_Rate|negotiated_algorithm
+- median_amount|World_Trade_Center_Professional_MLP_Rate
+- 10th_percentile|World_Trade_Center_Professional_MLP_Rate
+- 90th_percentile|World_Trade_Center_Professional_MLP_Rate
+- count|World_Trade_Center_Professional_MLP_Rate
+- standard_charge|World_Trade_Center_Professional_MLP_Rate|methodology
+- additional_payer_notes|World_Trade_Center_Professional_MLP_Rate
+- standard_charge|Chickasaw_Nation_ Inpatient_Rate|negotiated_dollar
+- standard_charge|Chickasaw_Nation_ Inpatient_Rate|negotiated_percentage
+- standard_charge|Chickasaw_Nation_ Inpatient_Rate|negotiated_algorithm
+- median_amount|Chickasaw_Nation_ Inpatient_Rate
+- 10th_percentile|Chickasaw_Nation_ Inpatient_Rate
+- 90th_percentile|Chickasaw_Nation_ Inpatient_Rate
+- count|Chickasaw_Nation_ Inpatient_Rate
+- standard_charge|Chickasaw_Nation_ Inpatient_Rate|methodology
+- additional_payer_notes|Chickasaw_Nation_ Inpatient_Rate
+- standard_charge|Chickasaw_Nation_ Outpatient_Rate|negotiated_dollar
+- standard_charge|Chickasaw_Nation_ Outpatient_Rate|negotiated_percentage
+- standard_charge|Chickasaw_Nation_ Outpatient_Rate|negotiated_algorithm
+- median_amount|Chickasaw_Nation_ Outpatient_Rate
+- 10th_percentile|Chickasaw_Nation_ Outpatient_Rate
+- 90th_percentile|Chickasaw_Nation_ Outpatient_Rate
+- count|Chickasaw_Nation_ Outpatient_Rate
+- standard_charge|Chickasaw_Nation_ Outpatient_Rate|methodology
+- additional_payer_notes|Chickasaw_Nation_ Outpatient_Rate
+- standard_charge|Chickasaw_Nation_Professional_MD_Rate|negotiated_dollar
+- standard_charge|Chickasaw_Nation_Professional_MD_Rate|negotiated_percentage
+- standard_charge|Chickasaw_Nation_Professional_MD_Rate|negotiated_algorithm
+- median_amount|Chickasaw_Nation_Professional_MD_Rate
+- 10th_percentile|Chickasaw_Nation_Professional_MD_Rate
+- 90th_percentile|Chickasaw_Nation_Professional_MD_Rate
+- count|Chickasaw_Nation_Professional_MD_Rate
+- standard_charge|Chickasaw_Nation_Professional_MD_Rate|methodology
+- additional_payer_notes|Chickasaw_Nation_Professional_MD_Rate
+- standard_charge|Driscoll_Medicaid_ Inpatient_Rate|negotiated_dollar
+- standard_charge|Driscoll_Medicaid_ Inpatient_Rate|negotiated_percentage
+- standard_charge|Driscoll_Medicaid_ Inpatient_Rate|negotiated_algorithm
+- median_amount|Driscoll_Medicaid_ Inpatient_Rate
+- 10th_percentile|Driscoll_Medicaid_ Inpatient_Rate
+- 90th_percentile|Driscoll_Medicaid_ Inpatient_Rate
+- count|Driscoll_Medicaid_ Inpatient_Rate
+- standard_charge|Driscoll_Medicaid_ Inpatient_Rate|methodology
+- additional_payer_notes|Driscoll_Medicaid_ Inpatient_Rate
+- standard_charge|Driscoll_Medicaid_ Outpatient_Rate|negotiated_dollar
+- standard_charge|Driscoll_Medicaid_ Outpatient_Rate|negotiated_percentage
+- standard_charge|Driscoll_Medicaid_ Outpatient_Rate|negotiated_algorithm
+- median_amount|Driscoll_Medicaid_ Outpatient_Rate
+- 10th_percentile|Driscoll_Medicaid_ Outpatient_Rate
+- 90th_percentile|Driscoll_Medicaid_ Outpatient_Rate
+- count|Driscoll_Medicaid_ Outpatient_Rate
+- standard_charge|Driscoll_Medicaid_ Outpatient_Rate|methodology
+- additional_payer_notes|Driscoll_Medicaid_ Outpatient_Rate
+- standard_charge|Driscoll_Medicaid_Professional_Adult_21-999_MD|negotiated_dollar
+- standard_charge|Driscoll_Medicaid_Professional_Adult_21-999_MD|negotiated_percentage
+- standard_charge|Driscoll_Medicaid_Professional_Adult_21-999_MD|negotiated_algorithm
+- median_amount|Driscoll_Medicaid_Professional_Adult_21-999_MD
+- 10th_percentile|Driscoll_Medicaid_Professional_Adult_21-999_MD
+- 90th_percentile|Driscoll_Medicaid_Professional_Adult_21-999_MD
+- count|Driscoll_Medicaid_Professional_Adult_21-999_MD
+- standard_charge|Driscoll_Medicaid_Professional_Adult_21-999_MD|methodology
+- additional_payer_notes|Driscoll_Medicaid_Professional_Adult_21-999_MD
+- standard_charge|Driscoll_Medicaid_Professional_Adult_21-999_MLP|negotiated_dollar
+- standard_charge|Driscoll_Medicaid_Professional_Adult_21-999_MLP|negotiated_percentage
+- standard_charge|Driscoll_Medicaid_Professional_Adult_21-999_MLP|negotiated_algorithm
+- median_amount|Driscoll_Medicaid_Professional_Adult_21-999_MLP
+- 10th_percentile|Driscoll_Medicaid_Professional_Adult_21-999_MLP
+- 90th_percentile|Driscoll_Medicaid_Professional_Adult_21-999_MLP
+- count|Driscoll_Medicaid_Professional_Adult_21-999_MLP
+- standard_charge|Driscoll_Medicaid_Professional_Adult_21-999_MLP|methodology
+- additional_payer_notes|Driscoll_Medicaid_Professional_Adult_21-999_MLP
+- standard_charge|Driscoll_Medicaid_Professional_Child_0-20_MD|negotiated_dollar
+- standard_charge|Driscoll_Medicaid_Professional_Child_0-20_MD|negotiated_percentage
+- standard_charge|Driscoll_Medicaid_Professional_Child_0-20_MD|negotiated_algorithm
+- median_amount|Driscoll_Medicaid_Professional_Child_0-20_MD
+- 10th_percentile|Driscoll_Medicaid_Professional_Child_0-20_MD
+- 90th_percentile|Driscoll_Medicaid_Professional_Child_0-20_MD
+- count|Driscoll_Medicaid_Professional_Child_0-20_MD
+- standard_charge|Driscoll_Medicaid_Professional_Child_0-20_MD|methodology
+- additional_payer_notes|Driscoll_Medicaid_Professional_Child_0-20_MD
+- standard_charge|Driscoll_Medicaid_Professional_Child_0-20_MLP|negotiated_dollar
+- standard_charge|Driscoll_Medicaid_Professional_Child_0-20_MLP|negotiated_percentage
+- standard_charge|Driscoll_Medicaid_Professional_Child_0-20_MLP|negotiated_algorithm
+- median_amount|Driscoll_Medicaid_Professional_Child_0-20_MLP
+- 10th_percentile|Driscoll_Medicaid_Professional_Child_0-20_MLP
+- 90th_percentile|Driscoll_Medicaid_Professional_Child_0-20_MLP
+- count|Driscoll_Medicaid_Professional_Child_0-20_MLP
+- standard_charge|Driscoll_Medicaid_Professional_Child_0-20_MLP|methodology
+- additional_payer_notes|Driscoll_Medicaid_Professional_Child_0-20_MLP
+- standard_charge|PromptPay_International|negotiated_dollar
+- standard_charge|PromptPay_International|negotiated_percentage
+- standard_charge|PromptPay_International|negotiated_algorithm
+- median_amount|PromptPay_International
+- 10th_percentile|PromptPay_International
+- 90th_percentile|PromptPay_International
+- count|PromptPay_International
+- standard_charge|PromptPay_International|methodology
+- additional_payer_notes|PromptPay_International
+- standard_charge|PromptPay_Domestic|negotiated_dollar
+- standard_charge|PromptPay_Domestic|negotiated_percentage
+- standard_charge|PromptPay_Domestic|negotiated_algorithm
+- median_amount|PromptPay_Domestic
+- 10th_percentile|PromptPay_Domestic
+- 90th_percentile|PromptPay_Domestic
+- count|PromptPay_Domestic
+- standard_charge|PromptPay_Domestic|methodology
+- additional_payer_notes|PromptPay_Domestic
+- additional_generic_notes
+known_deviations: []
+allowed_settings:
+- inpatient
+- outpatient
+- both
+allowed_billing_classes:
+- facility
+- professional
+- both
+amount_max: '100000000'
+max_reject_rate: 0.2
+min_data_rows: 1

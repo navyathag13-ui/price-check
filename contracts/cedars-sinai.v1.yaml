@@ -1,0 +1,26 @@
+source: cedars-sinai
+contract_version: 1
+layout: json
+accepted_template_versions:
+- 2.0.0
+- 3.0.0
+deprecated_template_versions:
+- 2.0.0
+required_columns:
+- hospital_name
+- last_updated_on
+- version
+- standard_charge_information
+expected_fixed_columns: []
+known_deviations: []
+allowed_settings:
+- inpatient
+- outpatient
+- both
+allowed_billing_classes:
+- facility
+- professional
+- both
+amount_max: '100000000'
+max_reject_rate: 0.2
+min_data_rows: 1
