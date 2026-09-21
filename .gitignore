@@ -8,3 +8,7 @@ data/gold/
 data/reference/*.zip
 .env
 *.part
+data/quarantine/
+data/sample/
+data/*.log
+data/alerts.jsonl

@@ -111,8 +111,9 @@ def run_one(slug: str, rec: dict, limit: int | None, out_root: Path, force: bool
             if limit and ctx.stats.rows_in >= limit:
                 break
     flush_main()
-    if rbuf:
-        pq.write_table(pa.Table.from_pylist(rbuf, schema=REJECT_SCHEMA), tmp / "rejects.parquet", compression="zstd")
+    if rbuf:   # own subfolder so a glob over canonical parts never picks up the differently-shaped rejects
+        (tmp / "rejects").mkdir()
+        pq.write_table(pa.Table.from_pylist(rbuf, schema=REJECT_SCHEMA), tmp / "rejects" / "rejects.parquet", compression="zstd")
     rate = n_rej / max(rows_out + n_rej, 1)
     dur = round(time.monotonic() - t0, 1)
     stats = {"slug": slug, "sha256": sha, "at": now(), "layout": layout, "template_version": ver,

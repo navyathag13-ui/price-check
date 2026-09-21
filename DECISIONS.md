@@ -71,3 +71,39 @@ parser rejects; found because the profiler failed on them, fixed and covered by 
 the units differ and must not be compared across layouts.
 **Ops finding.** Atrium's 2.88 GB download failed once with a broken pipe mid-transfer (retry in progress);
 robots.txt returned 400/403/404 on several hosts (no policy to honour or a block page), recorded in the manifest.
+
+---
+
+## ADR-007: Contracts are per-source, versioned YAML; file-level violations quarantine, row-level ones are logged
+**Decision.** `contracts/<slug>.v1.yaml` (pydantic-validated) states layout, accepted/deprecated template
+versions, required columns, expected fixed columns, allowed enums, amount cap, max reject rate. On arrival:
+(1) wrong layout / unaccepted version / missing required column => **quarantine record + error alert, nothing promoted**;
+(2) new or vanished non-payer columns or a deprecated version => **warning alert, still processed**;
+(3) row/price-cell problems => **rejects table with reason**, and if the reject rate exceeds the contract's
+limit (or zero rows are produced) the whole file is quarantined and its partial output deleted.
+Promotion is atomic (write to `.tmp`, rename, `_SUCCESS` marker) so a crash never leaves a half-promoted file.
+**Alternatives rejected.** One global schema (hospitals differ: 3 files omit the CMS-required `billing_class`);
+silently coercing/dropping bad rows (violates "never silently drop"); failing the whole run on any bad row
+(one bad row would block a 7.5M-row file).
+**Evidence.** `tests/test_quarantine_e2e.py` exercises quarantine, high-reject-rate quarantine and idempotent
+promotion. Contracts were *derived from the real headers*, which surfaced the `billing_class` omissions
+(NYU Tisch, OHSU, Rush) as `known_deviations`.
+**Limits.** "Alert" is currently an append-only `alerts.jsonl`; real delivery (email/Action Group) is Phase 8.
+
+## ADR-008: Canonical model is long-form, one row per price fact
+**Decision.** One row per (hospital, source row, setting, billing class, payer, plan, price type) with
+`price_type` in gross|cash|negotiated|min|max, `amount` decimal(14,4), primary code chosen by priority
+(CPT > HCPCS > MS-DRG > APR-DRG > ICD-10-PCS > NDC > CDM > RC > LOCAL > OTHER) with the rest kept in `alt_codes`.
+Tall CSV repeats gross/cash/min/max on every payer row, so generic prices are emitted once per *consecutive* item.
+**Alternatives rejected.** Keeping wide (NYU has 3,733 columns; not queryable across hospitals); one row per
+item with a payer array (harder to MERGE and to compare). Amounts as float (money); decimal is used.
+**Known approximation.** Consecutive-dedupe assumes an item's rows are adjacent. If a hospital interleaves
+items, generic prices would be emitted more than once (harmless duplicates, not lost data); not measured.
+**Not loaded (counted, not hidden).** Percentage/algorithm-only negotiated charges, estimated amounts and
+percentiles are outside the five required price types; counts are in `run_log.jsonl`.
+
+## ADR-009: Bugs the tests found (recorded because they are the evidence the tests earn their place)
+1. Hypothesis: a positive amount such as `4.9e-43` rounded to `0.0000` and would have been accepted as a $0 price. Fixed -> rejected as `non_positive_amount`.
+2. JSON parser assumed a `peek`-able stream; caught by a `BytesIO` unit test.
+3. Reading real files: NYU/OHSU/MD Anderson contain non-UTF-8 bytes (cp1252). Decoded per-byte with a counting fallback (NYU 45, OHSU 293, MD Anderson 25 bytes) instead of `errors="replace"`, which had silently hidden them in Phase 1.
+4. `rejects.parquet` beside data parts broke a plain glob over the table; moved to a `rejects/` subfolder.
