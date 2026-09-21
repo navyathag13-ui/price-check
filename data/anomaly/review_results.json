@@ -1,0 +1,106 @@
+{
+  "strata": {
+    "R2": {
+      "population": 294558,
+      "reviewed": 20,
+      "E": 11,
+      "U": 0,
+      "R": 9,
+      "precision_low": 0.55,
+      "precision_high": 0.55,
+      "wilson95_low_bound": [
+        0.342,
+        0.742
+      ],
+      "hospitals_among_E": [
+        "sanford-usd",
+        "uihc",
+        "unitypoint-finley"
+      ]
+    },
+    "IF_only": {
+      "population": 10428,
+      "reviewed": 20,
+      "E": 18,
+      "U": 1,
+      "R": 1,
+      "precision_low": 0.9,
+      "precision_high": 0.95,
+      "wilson95_low_bound": [
+        0.699,
+        0.972
+      ],
+      "hospitals_among_E": [
+        "sanford-usd"
+      ]
+    },
+    "R3": {
+      "population": 297423,
+      "reviewed": 20,
+      "E": 2,
+      "U": 1,
+      "R": 17,
+      "precision_low": 0.1,
+      "precision_high": 0.15,
+      "wilson95_low_bound": [
+        0.028,
+        0.301
+      ],
+      "hospitals_among_E": [
+        "gundersen-lutheran",
+        "unitypoint-iowa-methodist"
+      ]
+    },
+    "R5": {
+      "population": 3,
+      "reviewed": 3,
+      "E": 0,
+      "U": 0,
+      "R": 3,
+      "precision_low": 0.0,
+      "precision_high": 0.0,
+      "wilson95_low_bound": [
+        0.0,
+        0.562
+      ],
+      "hospitals_among_E": []
+    },
+    "R1": {
+      "population": 306898,
+      "reviewed": 20,
+      "E": 5,
+      "U": 0,
+      "R": 15,
+      "precision_low": 0.25,
+      "precision_high": 0.25,
+      "wilson95_low_bound": [
+        0.112,
+        0.469
+      ],
+      "hospitals_among_E": [
+        "mercyone-des-moines",
+        "uihc"
+      ]
+    },
+    "R4": {
+      "population": 13358,
+      "reviewed": 20,
+      "E": 0,
+      "U": 3,
+      "R": 17,
+      "precision_low": 0.0,
+      "precision_high": 0.15,
+      "wilson95_low_bound": [
+        -0.0,
+        0.161
+      ],
+      "hospitals_among_E": []
+    }
+  },
+  "n_reviewed": 103,
+  "overall_precision_estimate": {
+    "lower": 0.301,
+    "upper": 0.32,
+    "flagged_population": 922668
+  }
+}

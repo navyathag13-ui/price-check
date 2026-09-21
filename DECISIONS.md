@@ -152,3 +152,23 @@ From the recorded real report (`reports/outputs/91f166ac89a2.csv`, Delta version
 - Hospitals label the *same* numeric procedure code with different `code_type` (CPT at 15 hospitals, HCPCS at 7 for code 11043). Code type is not a reliable identity; the gold layer must key on the code string and treat CPT/HCPCS Level I as one namespace.
 - Spreads are wide and include implausible lows: CPT 11043 negotiated ranges $0.25 to $40,293 (median $81.36). Not judged here; it is the input to Phase 4's anomaly work.
 - Storage: the history Delta table is 4.1 GB versus 1.0 GB for the zstd silver Parquet it came from (Delta written with default compression, unoptimised). Not yet compacted or re-compressed; that is Phase 6 and will be measured, not assumed.
+
+---
+
+## ADR-014: Quality score = four transparent ratios, equal weights, not validated against ground truth
+Completeness, validity, consistency, freshness (definitions in `quality/scores.py`), each 0..1, averaged x100, with the
+raw metrics stored beside the score (`docs/quality_scores.csv`, Delta `quality_scores`). Equal weights and a 365-day
+freshness window (CMS requires at least annual updates) are **judgment calls**. Sensitivity: hospital ordering stays close
+under alternative weights (Spearman 0.95-0.97) but drops to 0.86 if freshness is removed, so freshness genuinely drives
+ranks. There is no ground truth for "quality"; the score ranks files relative to each other, it does not certify them.
+**Alternative rejected:** a single ML-derived score (nothing to train it against).
+
+## ADR-015: Anomaly detection = fixed statistical rules + Isolation Forest; results reported as measured, including unflattering ones
+Thresholds were fixed before looking at flags and not tuned on the injection test. **Measured, see docs/phase4_report.md:**
+1. Pooled recall on 9 injected corruption types is 81.5% (rules 81.3%); the headline hides a split: crude x10/x100 scaling of *one* price is caught 83-99% of the time because the item's own gross/min/max contradicts it, but a **consistent unit error** (whole item scaled together) is caught only 19.8% (x10) and 42.8% (x100).
+2. The peer comparison alone is a weak separator: real cross-hospital dispersion is huge (median log-scale ~1.1). At |z|>=5 it flags 2.8% of clean rows and catches 16% of x10 unit errors; lowering to 3 doubles the noise for 36% recall.
+3. The Isolation Forest adds ~0.3 points of recall over the rules on injections (95.6% -> 95.9% on the first 7 types). Its one clear win: it surfaced Sanford's negotiated price of exactly $1.00 on items with $9k-$34k gross (109,312 such prices at Sanford, 102,613 on items with gross >= $100), which no rule targeted. Verdict: keep it, but do not claim it is what makes detection work.
+4. Estimated precision of the flags is ~30-32% by an AI-labeled review of 103 rows against a protocol committed before sampling. Broad internal-consistency rules are the main noise source (R3 out-of-min/max ~10%, R4 cash>gross ~0% likely-error). This is not a human/domain-expert review and the sample is clustered by hospital; treat as order-of-magnitude.
+5. Known false positive, pinned in a test: rule R5 flags $99,999.94, a legitimate price for a pneumatic VAD driver (peer median $113k). All 3 R5 hits were false.
+**What it misses (stated, not hidden):** errors that are consistent across an item's own prices; errors in codes with too few peers (only 43% of negotiated rows are peer-scorable); wrong-but-plausible prices; systematic hospital-wide bias; anything I did not think to inject. **Circularity:** recall on corruptions I invented tests only what I imagined.
+**v2 rule candidates (not applied, so the reported numbers stay pre-registered):** negotiated == $1.00 where item gross >= $100; UIHC-style $1.00 gross charges; peer groups that ignore catch-all codes like A9270/J3490 that mix unrelated products.
