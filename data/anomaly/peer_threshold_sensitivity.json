@@ -1,0 +1,32 @@
+[
+ {
+  "threshold": 2,
+  "natural_flag_rate": 0.1084,
+  "recall_x10": 0.5817,
+  "recall_x100": 0.9006
+ },
+ {
+  "threshold": 3,
+  "natural_flag_rate": 0.0616,
+  "recall_x10": 0.3583,
+  "recall_x100": 0.7329
+ },
+ {
+  "threshold": 4,
+  "natural_flag_rate": 0.0388,
+  "recall_x10": 0.2319,
+  "recall_x100": 0.5397
+ },
+ {
+  "threshold": 5,
+  "natural_flag_rate": 0.0279,
+  "recall_x10": 0.1653,
+  "recall_x100": 0.3983
+ },
+ {
+  "threshold": 6,
+  "natural_flag_rate": 0.0211,
+  "recall_x10": 0.1199,
+  "recall_x100": 0.3102
+ }
+]

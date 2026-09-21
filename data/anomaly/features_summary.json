@@ -1,0 +1,18 @@
+{
+  "candidate_rows": {
+    "cash": 1103390,
+    "gross": 1120934,
+    "negotiated": 26278010
+  },
+  "scored_rows": {
+    "cash": 721298,
+    "gross": 738277,
+    "negotiated": 11273561
+  },
+  "seconds": 10.4,
+  "coverage": {
+    "cash": 0.6537,
+    "gross": 0.6586,
+    "negotiated": 0.429
+  }
+}
