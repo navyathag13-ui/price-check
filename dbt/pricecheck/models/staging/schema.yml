@@ -1,0 +1,28 @@
+version: 2
+models:
+  - name: stg_price_current
+    description: "Current (is_current=true) price facts from the SCD2 Delta history table."
+    columns:
+      - name: row_id
+        tests: [unique, not_null]
+      - name: amount
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+      - name: price_type
+        tests: [{accepted_values: {values: ["gross","cash","negotiated","min","max"]}}]
+  - name: stg_price_history
+    description: "Every version of every price fact (current and closed)."
+    columns:
+      - name: row_id
+        tests: [unique, not_null]
+  - name: stg_quality_scores
+    columns:
+      - name: quality_score
+        tests:
+          - dbt_utils.accepted_range: {min_value: 0, max_value: 100}
+  - name: stg_hospitals
+    columns:
+      - name: hospital_slug
+        tests: [unique, not_null]

@@ -23,3 +23,9 @@ data/matching/*.parquet
 data/matching/*.npy
 data/matching/llm_*.jsonl
 data/tmp/
+dbt/pricecheck/target/
+dbt/pricecheck/logs/
+dbt/pricecheck/dbt_packages/
+dbt/pricecheck/package-lock.yml
+data/gold/
+data/dbt_sources/

@@ -1,0 +1,48 @@
+version: 2
+models:
+  - name: dim_hospital
+    description: "One row per hospital, with its latest quality score."
+    columns:
+      - name: hospital_slug
+        tests: [unique, not_null]
+      - name: quality_score
+        tests:
+          - dbt_utils.accepted_range: {min_value: 0, max_value: 100}
+  - name: dim_procedure_code
+    description: "One row per (code, code_type) observed in current prices."
+    columns:
+      - name: code
+        tests: [not_null]
+      - name: hospital_count
+        tests:
+          - dbt_utils.accepted_range: {min_value: 1}
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [code, code_type]
+  - name: fact_price
+    description: "One row per currently-active price fact, joined with its anomaly-detector flags."
+    columns:
+      - name: row_id
+        tests: [unique, not_null]
+      - name: hospital_slug
+        tests:
+          - relationships: {to: ref('dim_hospital'), field: hospital_slug}
+      - name: amount
+        tests:
+          - dbt_utils.accepted_range: {min_value: 0, inclusive: false}
+  - name: mart_price_comparison
+    description: "Price spread per (code, price_type) across hospitals -- backs the API/dashboard 'compare a procedure' view."
+    columns:
+      - name: n_hospitals
+        tests:
+          - dbt_utils.accepted_range: {min_value: 2}
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [code, code_type, price_type]
+  - name: mart_hospital_quality
+    columns:
+      - name: hospital_slug
+        tests: [unique, not_null]
+      - name: pct_flagged
+        tests:
+          - dbt_utils.accepted_range: {min_value: 0, max_value: 100}

@@ -1,0 +1,13 @@
+version: 2
+sources:
+  - name: raw
+    schema: main
+    tables:
+      - name: raw_price_history
+        description: "SCD2 price history, all versions. Loaded from the Delta table via a DuckDB view created in on-run-start."
+      - name: raw_quality_scores
+        description: "Per-hospital-per-run quality scores (Phase 4)."
+      - name: raw_anomaly_flags
+        description: "Per-price anomaly detector flags (Phase 4)."
+      - name: raw_hospital_registry
+        description: "Hospital metadata (config/hospitals.yaml, exported to CSV for dbt to read)."

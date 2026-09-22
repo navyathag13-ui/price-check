@@ -1,0 +1,20 @@
+name: 'pricecheck'
+version: '1.0.0'
+profile: 'pricecheck'
+model-paths: ["models"]
+test-paths: ["tests"]
+clean-targets: ["target", "dbt_packages"]
+
+on-run-start:
+  - "INSTALL delta; LOAD delta;"
+  - "CREATE OR REPLACE VIEW raw_price_history AS SELECT * FROM delta_scan('{{ env_var(\"PRICE_HISTORY_PATH\") }}')"
+  - "CREATE OR REPLACE VIEW raw_quality_scores AS SELECT * FROM delta_scan('{{ env_var(\"QUALITY_SCORES_PATH\") }}')"
+  - "CREATE OR REPLACE VIEW raw_anomaly_flags AS SELECT * FROM read_parquet('{{ env_var(\"ANOMALY_FLAGS_PATH\") }}')"
+  - "CREATE OR REPLACE VIEW raw_hospital_registry AS SELECT * FROM read_csv('{{ env_var(\"HOSPITAL_REGISTRY_PATH\") }}', header=true, auto_detect=true)"
+
+models:
+  pricecheck:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
