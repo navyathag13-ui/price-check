@@ -263,3 +263,38 @@ different columns and both matter; one does not substitute for the other.
 **Cost of maintenance, measured, not assumed:** OPTIMIZE took 6.4s, Z-ORDER took 62.2s on 41.1M rows -- Z-order
 rewrites and re-sorts every row, so it belongs on a schedule (e.g. after each incremental load, or nightly), not
 something to run per-query.
+
+---
+
+## ADR-020: Azure SQL serves precomputed gold marts, not the 41.1M-row fact grain
+**Decision.** Only `dim_hospital` (21 rows), `dim_procedure_code` (79,213), `mart_price_comparison` (128,372),
+`mart_hospital_quality` (21) are loaded into Azure SQL, via `sql/azure_sql/001_schema.sql` + `002_views.sql` +
+`pricecheck.serving.load_azure_sql`. The 41.1M-row `fact_price` grain stays in Delta/DuckDB only.
+**Alternatives rejected.** Loading the full fact table into Azure SQL: at ~41M rows it would consume a large share of
+the free offer's 32GB storage and, more importantly, the free offer's 100,000 vCore-seconds/month is meant for a
+small serving workload, not repeated full-table scans -- the marts already have everything the "pick a procedure, see
+the spread" use case needs, precomputed once by dbt rather than aggregated per request.
+**Consequence, stated honestly.** Azure SQL cannot answer an arbitrary ad-hoc query over individual price rows (e.g.
+"show me every negotiated rate MSK has with Aetna") -- that still requires the Delta table via DuckDB/Spark. The
+served API is scoped to what the marts support: search, spread-by-code, hospital quality. This is a real, documented
+scope boundary, not an oversight.
+
+## ADR-021: One query layer, two backends, resolved by environment (same pattern as the RAG project's llm_service.py)
+**Decision.** `serving/db.py` resolves to Azure SQL only when all four `AZURE_SQL_*` env vars are set, else DuckDB
+(the local dbt-built gold database) -- verified: 3 of 4 vars set still falls back to DuckDB, not a broken half-state.
+FastAPI (`serving/api.py`) and Strawberry GraphQL (`serving/graphql_app.py`) both call the same `db.py` functions, so
+REST and GraphQL can never silently disagree (checked directly: `test_graphql_matches_rest`). The Streamlit dashboard
+imports the same module rather than calling either API, so there is exactly one data-access path with three
+presentations, not three independent ones that could drift.
+**Alternatives rejected.** A shared ORM (SQLAlchemy) across DuckDB and Azure SQL: the two engines' SQL dialects
+already diverge enough (T-SQL `TOP` vs. DuckDB `LIMIT`, parameter styles) that hand-written per-backend SQL in one
+place was more honest than an abstraction that would paper over real differences; separate REST/GraphQL data-access
+code (rejected for the drift risk above).
+**Driver note.** `pymssql` (bundled FreeTDS) was used instead of `pyodbc` + Microsoft's ODBC Driver 18 -- the latter
+needs a system-level installer this environment can't run (no Homebrew, as established in ADR-000-equivalent
+constraints noted throughout this project); `pip install pymssql` needed nothing beyond the venv. **Not yet verified
+against a real Azure SQL Database** -- no such database has been created this session (see `sql/azure_sql/README.md`
+for why: Conditional Access blocks the Azure CLI here, same constraint as the RAG project). The DuckDB path is fully
+verified (96 tests, including live REST/GraphQL/dashboard checks against the real 41.1M-row-derived gold layer); the
+Azure SQL path is code-complete and reviewed, not live-tested. State this distinction plainly in the README, the same
+pattern used throughout this project.
