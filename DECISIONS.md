@@ -331,3 +331,21 @@ Caught before the first push (verified via `git ls-remote` that nothing had land
 rewritten with `git filter-repo` rather than just gitignoring going forward -- `.git` dropped from 1.0GB to 324KB.
 Small JSON/CSV evidence files derived from those artifacts (`review_results.json`, `injection_eval.json`, etc.)
 stayed tracked; only the large regeneratable binaries were removed.
+
+## ADR-023: Observability -- run_metrics consolidates existing per-stage logs; alerting on shrink/shape-change/freshness
+**Decision.** `observability/run_metrics.py` builds ONE Delta table (`run_metrics`) by reading each phase's own
+already-existing evidence (bronze `manifest.jsonl`, silver `run_log.jsonl`, history `ingestion_ledger`, dbt's
+`run_results.json`) rather than inventing a parallel logging system -- 107 real rows from this project's actual
+run history on first build. `observability/alerts.py` checks three real conditions against that same evidence:
+size shrink (>50% drop vs. the previous successful fetch), 3+ consecutive fetch failures, layout/template-version
+change between consecutive profiles, and staleness (>45 days since `last_updated_on`, tighter than CMS's own
+annual-update requirement). Real run against this project's actual bronze history: every one of the 20 hospitals
+fetched only once so far shows a `stale` warning (87-300 days) -- correct behavior given a single-snapshot dataset,
+not a bug; it will report cleanly once a second real fetch cycle runs.
+**Bugs found while testing this module properly, not glossed over:** (1) the failure-streak check was nested inside
+an `if len(ok) < 2: continue` meant only for the shrink comparison, so a hospital with fewer than 2 *successful*
+fetches never got checked for a failure streak either -- fixed by separating the two checks. (2) My own first test
+fixture reused the same `fetched_at` value for two different records, which silently produced a different (but
+still technically "sorted") ordering than intended and made the test fail for a reason unrelated to the alerting
+logic -- fixed the fixture to use distinct, real-looking timestamps, and added a companion test
+(`test_two_failures_then_a_success_does_not_alert`) to lock in the correct behavior in both directions.

@@ -49,6 +49,7 @@ jobs:
         # a mock -- every dbt test that can meaningfully run, does.
         run: |
           pip install -e . deltalake pyarrow
+          mkdir -p data/gold
           python scripts/ci_fixtures.py
       - name: dbt deps
         working-directory: dbt/pricecheck
