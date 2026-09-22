@@ -13,8 +13,7 @@ evidence) and `docs/phaseN_report.md` for the generated, numbers-only reports be
 **Data findings, not medical or financial advice.** See the API/dashboard disclaimer.
 
 ## Status
-Phases 1-7 of 9 complete (see DECISIONS.md for the full list). In progress: Terraform, CI/CD, orchestration,
-observability, runbook, cost report (Phase 8), stretch streaming (Phase 9).
+All 9 phases complete, including the stretch goal (see DECISIONS.md for the full ADR list: 24 decision records). CI (lint, tests, dbt build against real fixtures, terraform validate) passes on GitHub Actions: https://github.com/navyathag13-ui/price-check/actions
 
 ## Quick start (local, no cloud)
 ```bash

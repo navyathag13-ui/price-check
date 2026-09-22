@@ -15,7 +15,7 @@ terraform plan -var="sql_admin_password=$(openssl rand -base64 24)" \
 terraform apply -var="sql_admin_password=..." -var="my_ip=..." -var="alert_email=..."
 ```
 
-`data.azurerm_resource_group.main` imports the resource group (`rg-pricecheck`) and the Azure OpenAI / Content
+Also provisions an Event Hubs namespace + hub (Basic SKU, ~$0.03/hour if left running -- **not free-tier**, stop/destroy it when not actively testing streaming) for the Phase 9 stretch goal's Kafka-compatible endpoint. `data.azurerm_resource_group.main` imports the resource group (`rg-pricecheck`) and the Azure OpenAI / Content
 Safety resources already created manually this session (see the RAG project's session and this project's
 `sql/azure_sql/README.md`) -- Terraform does not try to recreate them, only adds what doesn't exist yet: ADLS
 Gen2, Azure SQL, Log Analytics + App Insights, Data Factory, and a budget alert.

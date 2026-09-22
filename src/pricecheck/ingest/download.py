@@ -141,6 +141,11 @@ def main() -> None:
         last_host = host
         rec = download_one(session, h)
         append_manifest(rec)
+        if rec.get("outcome") == "stored":   # real new content, not a re-fetch of something already seen
+            from pricecheck.streaming.produce import emit, make_event
+            ev = make_event(h["slug"], rec["sha256"], rec["size_bytes"], rec["outcome"])
+            result = emit(ev)
+            print(f"  -> file-changed event emitted ({result['backend']}): {result['detail']}", flush=True)
         print(f"{h['slug']:28s} {rec['outcome']:20s} {rec.get('size_bytes', 0)/1e6:9.1f} MB "
               f"{rec.get('duration_s', '-')}s {rec.get('error', '')}", flush=True)
 

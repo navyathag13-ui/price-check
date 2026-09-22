@@ -90,6 +90,42 @@ resource "azurerm_data_factory" "adf" {
   # project's scheduled runs are nowhere near that.
 }
 
+# ── Stretch: Event Hubs (Kafka-compatible) for "file changed" events ────────────────────────────────────────────
+resource "azurerm_eventhub_namespace" "eh" {
+  name                = "pricecheck-eh-${substr(md5(data.azurerm_resource_group.main.id), 0, 8)}"
+  location            = var.location
+  resource_group_name = data.azurerm_resource_group.main.name
+  sku                 = "Basic" # cheapest SKU with the Kafka-compatible endpoint; ~$0.03/hour if left running -- see terraform/README.md cost note
+  capacity            = 1
+}
+
+resource "azurerm_eventhub" "file_changed" {
+  name              = "pricecheck-file-changed"
+  namespace_id      = azurerm_eventhub_namespace.eh.id
+  partition_count   = 1
+  message_retention = 1 # Basic SKU max; this project's event volume (one event per changed hospital file) does not need more
+}
+
+resource "azurerm_eventhub_authorization_rule" "producer" {
+  name                = "producer"
+  namespace_name      = azurerm_eventhub_namespace.eh.name
+  eventhub_name       = azurerm_eventhub.file_changed.name
+  resource_group_name = data.azurerm_resource_group.main.name
+  listen              = false
+  send                = true
+  manage              = false
+}
+
+resource "azurerm_eventhub_authorization_rule" "consumer" {
+  name                = "consumer"
+  namespace_name      = azurerm_eventhub_namespace.eh.name
+  eventhub_name       = azurerm_eventhub.file_changed.name
+  resource_group_name = data.azurerm_resource_group.main.name
+  listen              = true
+  send                = false
+  manage              = false
+}
+
 # ── Cost control: budget alert ─────────────────────────────────────────────────────────────────────────────────
 resource "azurerm_consumption_budget_resource_group" "budget" {
   name              = "pricecheck-monthly-budget"

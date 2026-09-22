@@ -349,3 +349,35 @@ fixture reused the same `fetched_at` value for two different records, which sile
 still technically "sorted") ordering than intended and made the test fail for a reason unrelated to the alerting
 logic -- fixed the fixture to use distinct, real-looking timestamps, and added a companion test
 (`test_two_failures_then_a_success_does_not_alert`) to lock in the correct behavior in both directions.
+
+---
+
+## ADR-024: Stretch streaming -- real Spark Structured Streaming, tested end to end locally; Event Hubs code-complete but unverified
+**Decision.** `ingest/download.py` emits a "file changed" event (`streaming/produce.py`) whenever a download's
+content hash is genuinely new (`outcome == "stored"`, never on a duplicate). Two sinks, resolved by environment
+(same pattern as every other dual-backend module in this project -- `llm_service.py` in the RAG project,
+`serving/db.py` in this one): Event Hubs via its Kafka-compatible endpoint when `EVENTHUB_*` vars are set, else a
+local JSON file per event (one file per event, not an appended log, because Spark's file-source streaming triggers
+on new files appearing, not on file content changing). `streaming/consume.py` is a real Spark Structured Streaming
+job (`readStream`, `foreachBatch`, checkpointed) that drives the actual pipeline per event -- `silver.pipeline.run_one`
+then `history.delta_store.load_version` -- not a toy consumer that only logs.
+**Verified end to end, locally, three ways:** (1) real events for two already-loaded hospitals processed through a
+real Spark micro-batch, both correctly resolving to `already_current` (silver and history both idempotently
+skipped); (2) a synthetic corrupted version of a real hospital file (truncated mid-row, breaking its CSV header)
+pushed through the same pipeline and correctly quarantined by the real contract validation, proving the streaming
+path genuinely drives reprocessing and genuinely catches bad data, not just happy-path events; (3) 111 tests, including
+`consume.reprocess`'s three real outcome branches (stale event, quarantined, reprocessed-then-idempotent).
+**Two real bugs found and fixed by that testing, not assumed away:** (1) `reprocess()` originally treated any
+non-`"promoted"` `run_one` outcome as `"quarantined"`, which was wrong for the very common `"skipped_already_done"`
+case -- every already-processed event was being misreported as quarantined. (2) My own first test fixture for the
+"good" case had no price columns at all, so it legitimately produced zero output rows and was correctly quarantined
+by the real pipeline logic -- not a product bug, a fixture bug, fixed by giving the fixture an actual price column.
+**Not verified:** the `kafka` source path (Event Hubs) -- no Event Hubs namespace exists yet (Terraform above is
+validated, not applied, same Conditional Access constraint as every other Azure resource in this project). The
+Kafka connection code follows Microsoft's documented SASL_PLAIN pattern for Event Hubs' Kafka endpoint but has not
+been exercised against a real namespace.
+**Alternatives rejected.** A real local Kafka/Redpanda broker for full local testing of the `kafka` code path: would
+have required a JVM-based broker or a Docker container, neither available without Homebrew/Docker in this
+environment (same constraint noted throughout this project); the file-source path exercises the same
+`handle_batch`/`reprocess` logic the Kafka path would call, so the actual reprocessing logic (the part that matters)
+is genuinely tested even though the Kafka transport specifically is not.

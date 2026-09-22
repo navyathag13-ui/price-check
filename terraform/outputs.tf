@@ -11,3 +11,15 @@ output "app_insights_connection_string" {
 output "data_factory_name" {
   value = azurerm_data_factory.adf.name
 }
+
+output "eventhub_namespace_name" {
+  value = azurerm_eventhub_namespace.eh.name
+}
+output "eventhub_producer_connection_string" {
+  value     = azurerm_eventhub_authorization_rule.producer.primary_connection_string
+  sensitive = true
+}
+output "eventhub_consumer_connection_string" {
+  value     = azurerm_eventhub_authorization_rule.consumer.primary_connection_string
+  sensitive = true
+}
