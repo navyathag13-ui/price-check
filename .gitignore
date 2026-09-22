@@ -17,3 +17,9 @@ data/sandbox_repro/
 data/tmp/
 data/*.jsonl
 data/silver_run_log_BEFORE_fix.jsonl
+data/bench/
+data/storage_exp/
+data/matching/*.parquet
+data/matching/*.npy
+data/matching/llm_*.jsonl
+data/tmp/

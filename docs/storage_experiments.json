@@ -1,0 +1,48 @@
+{
+ "V0_real_partitioned_by_hospital": {
+  "files": 52,
+  "median_file_mb": 103.3,
+  "files_whose_code_range_contains_Q1_code": 52,
+  "size_gb": 4.42,
+  "timings_s": {
+   "Q1_one_code": 0.037,
+   "Q2_hospital_type_codes": 0.015,
+   "Q3_full_aggregate": 0.184
+  }
+ },
+ "V1_fragmented_unpartitioned_SIMULATED": {
+  "files": 420,
+  "median_file_mb": 4.8,
+  "files_whose_code_range_contains_Q1_code": 419,
+  "size_gb": 2.03,
+  "timings_s": {
+   "Q1_one_code": 0.058,
+   "Q2_hospital_type_codes": 0.026,
+   "Q3_full_aggregate": 0.222
+  }
+ },
+ "V2_after_compaction": {
+  "files": 16,
+  "median_file_mb": 80.5,
+  "files_whose_code_range_contains_Q1_code": 16,
+  "size_gb": 3.27,
+  "timings_s": {
+   "Q1_one_code": 0.072,
+   "Q2_hospital_type_codes": 0.051,
+   "Q3_full_aggregate": 0.273
+  },
+  "optimize_seconds": 6.4
+ },
+ "V3_after_zorder_code": {
+  "files": 8,
+  "median_file_mb": 133.6,
+  "files_whose_code_range_contains_Q1_code": 1,
+  "size_gb": 4.31,
+  "timings_s": {
+   "Q1_one_code": 0.015,
+   "Q2_hospital_type_codes": 0.027,
+   "Q3_full_aggregate": 0.146
+  },
+  "zorder_seconds": 62.2
+ }
+}

@@ -41,8 +41,9 @@ is done by this repo (bronze is gitignored).
 **Decision.** CPT codes are stored as opaque codes. This project ships no AMA CPT descriptions.
 Descriptions come from (a) the hospital's own file, (b) CMS HCPCS Level II, (c) CMS MS-DRG Table 5.
 **Evidence (measured).** The CMS October 2026 alpha-numeric HCPCS file (`HCPC2026_OCT_ANWEB_v2.txt`,
-16,900 lines) contains **16,320 Level II codes (letter + 4 digits) and 0 five-digit numeric
-CPT-style codes**. So the free CMS reference cannot describe most procedure codes hospitals publish
+16,900 lines) has 16,320 lines beginning with a Level II code (letter + 4 digits), which are **8,770 distinct codes with a long
+description** (the remaining lines are continuation/other record types; corrected in Phase 5, this ADR first said
+"16,320 codes"), and **0 five-digit numeric CPT-style codes**. So the free CMS reference cannot describe most procedure codes hospitals publish
 (CPT). Consequence for Phase 5: ground truth and semantic matching must lean on hospital
 descriptions and MS-DRG titles, and the labeled set cannot use AMA text as the label source.
 **CMS licensing text: UNVERIFIED.** The CMS quarterly-update page has no license statement; I did
@@ -172,3 +173,93 @@ Thresholds were fixed before looking at flags and not tuned on the injection tes
 5. Known false positive, pinned in a test: rule R5 flags $99,999.94, a legitimate price for a pneumatic VAD driver (peer median $113k). All 3 R5 hits were false.
 **What it misses (stated, not hidden):** errors that are consistent across an item's own prices; errors in codes with too few peers (only 43% of negotiated rows are peer-scorable); wrong-but-plausible prices; systematic hospital-wide bias; anything I did not think to inject. **Circularity:** recall on corruptions I invented tests only what I imagined.
 **v2 rule candidates (not applied, so the reported numbers stay pre-registered):** negotiated == $1.00 where item gross >= $100; UIHC-style $1.00 gross charges; peer groups that ignore catch-all codes like A9270/J3490 that mix unrelated products.
+
+---
+
+## ADR-016: Procedure matching vocabulary is hospital-submitted text + CMS references, matched leave-one-hospital-out
+**Decision.** A 103,941-entry vocabulary: 94,399 normalised (description, code) pairs pooled from all 21 hospitals'
+own submitted descriptions (capped at 6 per code, ranked by how many hospitals agree), plus 8,770 CMS HCPCS Level II
+long descriptions and 772 CMS MS-DRG titles. When matching an item from hospital H, vocabulary entries contributed
+*only* by H are masked out (a 64-bit hospital bitmask per entry), so a hospital can never match trivially against its
+own text -- this is the honest analogue of a train/test split for a lookup table instead of a trained model.
+Normalisation (`matching/normalize.py`) strips hospital-specific prefixes (`hc`, `pr`, `hb`, `hchg`, `chg` -- found by
+frequency analysis of real descriptions, not guessed) and expands abbreviations found the same way (`w/o`->without,
+`cath`->catheter, `iol`->intraocular lens, etc). Since CPT text can't be shipped (ADR-004), CPT coverage in the
+vocabulary depends entirely on *other hospitals* having described the same CPT code -- there is no official CPT text
+anywhere in this system.
+**Alternatives rejected.** A single shared abbreviation dictionary sourced from a style guide (untested against this
+project's actual data); embedding the description text itself as the key rather than normalising first (measured
+worse recall in early testing, not kept).
+
+## ADR-017: Three matching methods measured on a 200-item stratified test set; tiered design calibrated on a separate 3,000-item dev set
+**Decision & measured results (`docs/phase5_report.md`, full numbers there):**
+1. **(a) rules + fuzzy (rapidfuzz WRatio):** 47.5% top-1 accuracy overall, 90.3% on the subset an exact normalised-text
+   match resolves (89 of 200 items), $0 marginal cost, 189ms median (dominated by scanning 103,941 candidate strings).
+2. **(b) embedding search (all-MiniLM-L6-v2 via sentence-transformers, FAISS flat index, Apple MPS):** 57.0% top-1
+   accuracy, $0 marginal cost, 10ms median (index build was a one-time 59s cost). Recall@10 (true code in the top 10)
+   is 78.5% -- this ceiling matters because the LLM tier consumes exactly those top-10 candidates.
+3. **(c) LLM (Azure OpenAI `gpt-4.1-mini`, structured JSON output):** **candidates mode** (choose among the
+   embedding's top-10, or null) scored 51.5%, ~6s median latency, ~$0.18/1,000 items (estimate, see cost caveat
+   below). **Free mode** (no candidates, recall from the model's own knowledge) scored **12.0%** -- the model cannot
+   reliably recall exact 5-digit procedure codes from memory; giving it a short list to choose from is what makes it
+   usable at all. This is a real, measured result, not assumed.
+4. **On the genuinely hard tail** (1,176 dev items where *both* fuzzy<0.9 and embedding<0.9): LLM-candidates accuracy
+   was only 23.0% (26.0% restricted to the model's own "high confidence" answers) -- worse than on the full test set,
+   because this subset is disproportionately catch-all/device HCPCS codes (C17xx, J3490, J8499...) that generically
+   describe hundreds of different physical parts, which no method here resolves well.
+**Tiered design, calibrated on dev only (never on the numbers reported above), applied once to test:** target >=95%
+dev precision per tier at >=30 supporting examples. Only the exact/fuzzy tier reached that bar on its own (at
+threshold 0.92); the embedding tier alone never reached 95% precision on the residual pool at any tested threshold --
+**its real contribution is as the LLM's candidate generator, not as an independent confident tier.** Result on the
+held-out 200-item test set: 103/200 resolved by exact/fuzzy tier (90.3% precision), 67/200 resolved by the LLM tier
+gated on its own "high confidence" label (**29.9% precision** -- the model's self-reported confidence does not track
+actual correctness well here), 30/200 sent to human review. Overall: 85% coverage, 66.5% precision on answered items,
+56.5% recall.
+**Honest conclusion, stated plainly:** the tiering strategy correctly routes the easy 50% of items to a free, fast
+method. It does **not** solve the hard tail -- LLM-with-candidates on catch-all/device codes is weak, and trusting the
+model's own confidence label as a quality gate would be a mistake without independent calibration (which this ADR's
+measurement now provides: don't trust it above ~30% precision here).
+**Cost caveat.** Azure's Retail Prices API returned no base (non-fine-tuned) `gpt-4.1-mini` meter for this region;
+$/1,000-item figures use the published fine-tuned-global rate as a directional stand-in, not a confirmed bill. Real
+spend is in Azure Cost Management.
+**Alternatives rejected:** training a supervised classifier (no labeled set large enough, and CPT-license constraints
+limit what could even be trained on); ANN index (HNSW) instead of a flat FAISS index (103,941 vectors is small enough
+that a flat index's exact search was already sub-millisecond; approximate search would trade correctness for no
+measured speed benefit at this scale).
+
+## ADR-018: Spark vs. single-node (DuckDB) -- measured up to 165M rows; Spark did not become worth it in this session
+**Decision & measured results (`docs/phase6_report.md`, full tables there).** The same three real transformations
+(staging dedupe/key-hash, cross-hospital peer statistics, item-context join) were implemented once as dialect-neutral
+SQL and run unchanged on DuckDB and local PySpark 4.2 + Delta, at 986K / 5.0M / 20.2M / 41.1M / 82.3M / 164.5M rows,
+single MacBook Air (10 threads, 18GB RAM). Result digests were compared and are byte-identical across engines at
+every size, so the comparison is of equivalent work, not divergent logic.
+**Spark was slower at every single size tested** -- from 17-50x slower at <1M rows down to 3.5-11x slower at 164.5M
+rows (4.8GB). The gap narrows as data grows because DuckDB's process RSS climbs toward the configured 11GB cap
+(10.0GB at 41M rows, ~9.2GB at 82-164M, evidence of memory pressure/spilling) while Spark's stays roughly flat
+(6.5-9.0GB) -- so the *trend* is real and the two curves are converging. They had **not crossed** at the largest size
+tested here. Spark's own fixed ~4-6s JVM startup cost never amortized below DuckDB's total time on these workloads
+either.
+**What this does NOT establish:** whether Spark would win on a real multi-node cluster (this was `local[10]` on one
+laptop, the opposite of what Spark is built for); whether Spark wins past 165M rows (only two points beyond the real
+41.1M were tested, at reduced statistical rigor -- see caveat in the report); whether it wins on workloads with more
+shuffle-heavy joins than these three. **Do not assume Spark is justified by data volume alone; on this project's real
+data, at the scale actually measured, it was not.** If/when the gold layer's dbt models (Phase 7) need to run at a
+size where this trend suggests Spark would win, re-measure rather than assume.
+**Alternatives considered, not run:** Polars (installed, not benchmarked this session -- DuckDB's SQL-first design
+matched the "same query text on both engines" comparison goal more directly; a Polars comparison is a reasonable
+follow-up, not done here).
+
+## ADR-019: Delta compaction alone does not speed up selective queries; Z-order does
+**Decision & measured results (`docs/phase6_report.md`).** On the real 41.1M-row table: OPTIMIZE (file compaction,
+420 fragmented files -> 16) barely changed the fraction of files a single-code query must open (419/420 -> 16/16,
+i.e. ~100% either way) because compaction does not sort data -- **it fixes small-file/listing overhead, not
+selectivity.** Z-ORDER BY (code) on top of that dropped file-pruning to 1/8 files and made the single-code query
+faster than the original real table (0.015s vs 0.037s), because the real table is partitioned by hospital, so a
+single-code query there still opens every hospital's partition; Z-order by code prunes across hospitals instead.
+**Consequence for the gold layer (Phase 7):** partition by the column most incremental loads filter on for
+maintenance (hospital), but Z-order (or Databricks liquid clustering, not testable in this environment -- ADR needed
+if/when real Databricks compute is used) by the column point-lookup queries actually filter on (code). These are
+different columns and both matter; one does not substitute for the other.
+**Cost of maintenance, measured, not assumed:** OPTIMIZE took 6.4s, Z-ORDER took 62.2s on 41.1M rows -- Z-order
+rewrites and re-sorts every row, so it belongs on a schedule (e.g. after each incremental load, or nightly), not
+something to run per-query.

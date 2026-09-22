@@ -1,0 +1,50 @@
+{
+  "calibration": {
+    "order": [
+      "exact_fuzzy",
+      "embedding"
+    ],
+    "thresholds": {
+      "exact_fuzzy": 0.92,
+      "embedding": null
+    }
+  },
+  "summary_all": {
+    "n": 200,
+    "answered": 170,
+    "precision": 0.665,
+    "recall": 0.565
+  },
+  "summary_excl_suspect": {
+    "n": 197,
+    "answered": 168,
+    "precision": 0.667,
+    "recall": 0.569
+  },
+  "summary_specific": {
+    "n": 132,
+    "answered": 128,
+    "precision": 0.805,
+    "recall": 0.78
+  },
+  "summary_catchall": {
+    "n": 66,
+    "answered": 41,
+    "precision": 0.22,
+    "recall": 0.136
+  },
+  "per_tier": {
+    "exact_fuzzy": {
+      "items": 103,
+      "precision": 0.903
+    },
+    "human_review": {
+      "items": 30,
+      "precision": null
+    },
+    "llm": {
+      "items": 67,
+      "precision": 0.299
+    }
+  }
+}
