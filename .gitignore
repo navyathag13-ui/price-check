@@ -29,3 +29,5 @@ dbt/pricecheck/dbt_packages/
 dbt/pricecheck/package-lock.yml
 data/gold/
 data/dbt_sources/
+data/anomaly/*.parquet
+data/anomaly/*.joblib
