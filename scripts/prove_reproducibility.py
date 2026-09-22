@@ -5,7 +5,9 @@ Version 2 = a SYNTHETIC change set derived from it (2% of prices +10%, 1% remove
 synthetic in the ledger -- we only have one real version per hospital so far, and this tests the mechanism, not
 hospital behaviour. Exit code 0 only if every check passes.
 """
-import hashlib, json, shutil, sys, time
+import hashlib
+import shutil
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 

@@ -1,6 +1,8 @@
 """Record (or reproduce) the pinned price-spread report against the REAL history table."""
-import json, sys
+import json
+import sys
 from pathlib import Path
+
 from pricecheck.history import delta_store as D
 from pricecheck.reports import median_price as R
 

@@ -2,7 +2,8 @@ import re
 from pathlib import Path
 
 import pytest
-from hypothesis import given, strategies as st
+from hypothesis import given
+from hypothesis import strategies as st
 
 from pricecheck.matching.normalize import code_family, normalize
 
@@ -34,8 +35,9 @@ def test_code_family():
 
 
 def test_leave_one_hospital_out_mask_logic():
-    from pricecheck.matching.matchers import Vocab
     import numpy as np
+
+    from pricecheck.matching.matchers import Vocab
     v = Vocab.__new__(Vocab)
     v.bits = {"h1": 1, "h2": 2}
     v.masks = np.array([1, 3, 1 << 40], dtype=np.int64)   # h1 only; h1+h2; CMS

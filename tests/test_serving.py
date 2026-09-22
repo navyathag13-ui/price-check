@@ -1,5 +1,4 @@
 """Serving layer: backend resolution + REST/GraphQL responses against the real local gold DB."""
-import os
 
 import pytest
 from fastapi.testclient import TestClient

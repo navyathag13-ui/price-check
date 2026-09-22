@@ -14,7 +14,7 @@ from typing import Iterator
 import ijson
 
 from pricecheck.silver.contract import Contract, split_wide_header
-from pricecheck.silver.model import BILLING_CLASSES, SETTINGS, Reject, parse_amount, pick_codes
+from pricecheck.silver.model import Reject, parse_amount, pick_codes
 
 GENERIC_TALL = {"gross": "standard_charge|gross", "cash": "standard_charge|discounted_cash",
                 "min": "standard_charge|min", "max": "standard_charge|max"}

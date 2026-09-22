@@ -1,6 +1,8 @@
 """Export current history rows as Parquet and carve deterministic subsets by key hash (same data distribution at every size)."""
 from pathlib import Path
+
 from pricecheck.history import delta_store as D
+
 ROOT = Path(__file__).resolve().parents[3]; B = ROOT / "data/bench"
 SUBSETS = {"s1m": 24, "s5m": 122, "s20m": 490, "full": 1000}      # per-mille of rows kept
 

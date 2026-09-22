@@ -1,8 +1,14 @@
 """Run the three workloads on one engine at one size; append results to data/bench/results.jsonl.
 usage: python -m pricecheck.bench.run --engine duck|spark --size s1m [--repeats 3]"""
-import argparse, json, os, threading, time
+import argparse
+import json
+import os
+import threading
+import time
 from pathlib import Path
+
 import psutil
+
 from pricecheck.bench.workloads import DUCK, SPARK, sql
 
 ROOT = Path(__file__).resolve().parents[3]; B = ROOT / "data/bench"

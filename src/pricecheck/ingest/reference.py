@@ -2,9 +2,12 @@
 
 CPT descriptions are AMA-copyrighted and are NOT in these files; see DECISIONS.md ADR-004.
 """
-import hashlib, json, time
+import hashlib
+import json
+import time
 from datetime import datetime, timezone
 from pathlib import Path
+
 import requests
 
 ROOT = Path(__file__).resolve().parents[3]

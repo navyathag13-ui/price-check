@@ -1,7 +1,9 @@
 """Generate docs/phase6_report.md from data/bench/results.jsonl and docs/storage_experiments.json."""
 import json
 from pathlib import Path
+
 import pandas as pd
+
 ROOT = Path(__file__).resolve().parents[1]
 rs = [json.loads(l) for l in (ROOT / "data/bench/results.jsonl").read_text().splitlines()]
 df = pd.DataFrame([{k: v for k, v in r.items() if k != "digest"} for r in rs])

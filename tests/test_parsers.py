@@ -3,8 +3,6 @@ import io
 import json
 from decimal import Decimal
 
-import pytest
-
 from pricecheck.silver.contract import Contract, validate_header
 from pricecheck.silver.model import Decoder, Reject
 from pricecheck.silver.parsers import Ctx, parse_json, parse_tall, parse_wide

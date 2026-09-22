@@ -54,7 +54,8 @@ def build(history: Path = ROOT / "data/delta/price_history", out: Path = OUT) ->
 
 
 if __name__ == "__main__":
-    import json, time
+    import json
+    import time
     t = time.monotonic(); r = build(); r["seconds"] = round(time.monotonic() - t, 1)
     r["coverage"] = {k: round(r["scored_rows"][k] / r["candidate_rows"][k], 4) for k in r["scored_rows"]}
     (OUT / "features_summary.json").write_text(json.dumps(r, indent=2)); print(json.dumps(r, indent=2))

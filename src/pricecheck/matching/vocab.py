@@ -7,7 +7,6 @@ contributing hospitals are only {H} are excluded, so a hospital's own descriptio
 """
 from __future__ import annotations
 
-import io
 import re
 import zipfile
 from pathlib import Path

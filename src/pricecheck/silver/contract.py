@@ -1,7 +1,6 @@
 """Versioned per-source data contracts and file-level validation."""
 from __future__ import annotations
 
-import re
 from decimal import Decimal
 from pathlib import Path
 from typing import Literal

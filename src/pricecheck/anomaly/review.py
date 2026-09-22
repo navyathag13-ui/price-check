@@ -3,8 +3,10 @@
 Labeled by Claude under docs/phase4_review_protocol.md (written before sampling). NOT a human/domain-expert review.
 Labels below are in sample order (rn 1..20 within each stratum). Short reasons live in review_labels.csv.
 """
-import json, math
+import json
+import math
 from pathlib import Path
+
 import pandas as pd
 
 OUT = Path(__file__).resolve().parents[3] / "data/anomaly"

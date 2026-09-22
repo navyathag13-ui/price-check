@@ -2,12 +2,7 @@
 >= TARGET per tier), then applied once to TEST. Compares two orders of the two non-LLM tiers."""
 from __future__ import annotations
 
-import json
-
-import numpy as np
 import pandas as pd
-
-from pricecheck.matching.vocab import OUT
 
 TARGET = 0.95
 GRID = [0.7, 0.75, 0.8, 0.85, 0.9, 0.92, 0.95, 0.97, 1.0]
@@ -56,7 +51,6 @@ def apply(df: pd.DataFrame, cal: dict, llm_col: str | None) -> pd.DataFrame:
 
 
 def summarize(t: pd.DataFrame) -> dict:
-    ans = t[t.tier != "human_review"]; ok = (ans.pred == ans.code)
     def sub(d):
         a = d[d.tier != "human_review"]
         return {"n": int(len(d)), "answered": int(len(a)), "precision": round(float((a.pred == a.code).mean()), 3) if len(a) else None,

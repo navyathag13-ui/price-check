@@ -72,7 +72,6 @@ def profile_csv(stream) -> dict:
 def profile_json(stream) -> dict:
     top: dict = {}
     items = 0
-    depth_key = None
     for prefix, event, value in ijson.parse(stream):
         if prefix.count(".") == 0 and event in ("string", "number", "boolean", "null") and prefix:
             top[prefix] = value

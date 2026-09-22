@@ -1,6 +1,7 @@
 """Render docs/phase2_report.md from silver/run_log.jsonl (numbers only from that log)."""
 import json
 from pathlib import Path
+
 ROOT = Path(__file__).resolve().parents[3]
 
 def main():

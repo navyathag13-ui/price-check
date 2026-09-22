@@ -298,3 +298,36 @@ for why: Conditional Access blocks the Azure CLI here, same constraint as the RA
 verified (96 tests, including live REST/GraphQL/dashboard checks against the real 41.1M-row-derived gold layer); the
 Azure SQL path is code-complete and reviewed, not live-tested. State this distinction plainly in the README, the same
 pattern used throughout this project.
+
+---
+
+## ADR-022: CI runs against real (if small) data, not hand-typed mocks; verified locally before trusting GitHub Actions
+**Decision.** `.github/workflows/ci.yml` has three jobs: (1) lint (ruff) + the full pytest suite, which skips every
+data-dependent test cleanly on a fresh checkout (verified by actually cloning this repo fresh and running the suite:
+67 passed, 29 skipped, 0 failed -- this caught a real bug, see below); (2) `dbt build` against `scripts/ci_fixtures.py`
+-- 3 synthetic hospitals written through the *real* `write_deltalake` path using the pipeline's actual `HISTORY_SCHEMA`
+(imported from `history/delta_store.py`, not redefined), so CI exercises the real dbt models and all 27 tests, not a
+mock; (3) `terraform fmt -check` + `init -backend=false` + `validate`. All three were run locally before being
+trusted in CI (Terraform 1.9.8 installed standalone, same constraint as every other tool in this project -- no
+Homebrew) and pass: `terraform validate` succeeds, `dbt build` against the CI fixtures is 42/42, the fresh-clone
+pytest run is clean.
+**Real bug found by testing against a fresh clone, not assumed away:** `manifest.jsonl`/`profile.jsonl` are
+committed (small, kept as run-evidence) but the multi-GB raw bronze files they reference are correctly gitignored.
+The old skip guard on `test_contract_accepts_current_real_file` checked only whether the *index* file existed, so in
+a fresh clone it ran the test body and failed on a missing multi-GB file instead of skipping. Fixed to check each
+referenced raw file individually (`tests/test_contracts.py::_real_file_for`).
+**Also found and fixed this phase, by actually running the full lint/test suite rather than writing CI blind:** 23
+genuinely unused imports (ruff F401, auto-fixed), one dead-code assignment in `matching/tiered.py` (`ans`/`ok`
+computed and never used), one in `ingest/profile.py` (`depth_key`), and a `pyarrow.lib.ArrowTypeError` in
+`ci_fixtures.py` itself (the Delta schema wants `decimal128` for `amount`; a plain Python `float` doesn't satisfy it).
+**`terraform apply` was never run.** Same Conditional Access constraint hit throughout this project and the RAG
+project before it: this tenant blocks non-interactive Azure CLI/SDK auth outside the portal/Cloud Shell, which
+Terraform's azurerm provider needs. `terraform/README.md` gives the exact commands to run in Cloud Shell. The CI
+`terraform` job is scoped to `validate` only, not `plan`/`apply`, for the same reason -- stated in the workflow file
+itself, not hidden.
+**Repo hygiene note, corrected this phase:** the Phase 4 commit accidentally committed 1.1GB of regeneratable
+anomaly-detection parquet/joblib artifacts (`features.parquet` 644MB, `flags.parquet` 497MB, plus smaller ones).
+Caught before the first push (verified via `git ls-remote` that nothing had landed on GitHub yet), so history was
+rewritten with `git filter-repo` rather than just gitignoring going forward -- `.git` dropped from 1.0GB to 324KB.
+Small JSON/CSV evidence files derived from those artifacts (`review_results.json`, `injection_eval.json`, etc.)
+stayed tracked; only the large regeneratable binaries were removed.

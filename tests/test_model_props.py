@@ -1,7 +1,8 @@
 """Property-based tests (Hypothesis) for the pure parsing functions."""
 from decimal import Decimal
 
-from hypothesis import given, settings, strategies as st
+from hypothesis import given
+from hypothesis import strategies as st
 
 from pricecheck.silver.contract import WIDE_SUFFIXES, split_wide_header
 from pricecheck.silver.model import CODE_PRIORITY, parse_amount, pick_codes

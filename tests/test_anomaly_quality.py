@@ -3,7 +3,8 @@ from datetime import date
 
 import numpy as np
 import pandas as pd
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from pricecheck.anomaly import detect as DT
 from pricecheck.anomaly.review import wilson

@@ -1,6 +1,8 @@
 """Merge the resumable LLM caches (test set, both modes) back into results_full_test.parquet."""
 import json
+
 import pandas as pd
+
 from pricecheck.matching.vocab import OUT
 
 df = pd.read_parquet(OUT / "results_ab_test.parquet")

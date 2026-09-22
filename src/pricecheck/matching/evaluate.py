@@ -6,7 +6,6 @@ import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
 
-import numpy as np
 import pandas as pd
 
 from pricecheck.matching.matchers import CATCH_ALL, EmbeddingMatcher, FuzzyMatcher, Vocab
@@ -42,7 +41,9 @@ def stage_ab():
 
 def _llm_run(df, mode, V, workers=3, tag="run"):
     """Resumable: each finished call is appended to data/matching/llm_<tag>_<mode>.jsonl and skipped on restart."""
-    import json, threading
+    import json
+    import threading
+
     from pricecheck.matching.llm import LLM
     llm = LLM(); ref = V.v.groupby("code").text.first().to_dict()
     cache = OUT / f"llm_{tag}_{mode}.jsonl"; lock = threading.Lock()

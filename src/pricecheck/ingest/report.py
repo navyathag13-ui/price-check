@@ -1,6 +1,7 @@
 """Render docs/phase1_report.md from bronze manifest + profile. Numbers come only from those files."""
 import json
 from pathlib import Path
+
 import yaml
 
 ROOT = Path(__file__).resolve().parents[3]

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import itertools
 import json
 import shutil
 import time
@@ -40,7 +39,8 @@ def observed_header(path: Path, prof: dict) -> tuple[str, str | None, list[str]]
     layout, ver = prof["layout"], prof.get("declared_version")
     if layout == "json":
         return layout, ver, list(prof.get("top_level_scalars", {})) + prof.get("top_level_arrays", [])
-    import csv, io
+    import csv
+    import io
     with open_payload(path) as (stream, _, _):
         r = csv.reader(io.TextIOWrapper(stream, encoding="utf-8-sig", errors="cp1252_fallback", newline=""))
         next(r); next(r)

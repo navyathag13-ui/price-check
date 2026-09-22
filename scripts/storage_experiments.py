@@ -9,10 +9,16 @@ Variants (all hold the identical 41,134,669 rows; written from data/bench/full):
   V5  Spark liquid clustering CLUSTER BY (code)
 Queries (identical text on every variant, DuckDB delta_scan): Q1 one code across hospitals; Q2 one hospital + type + 10 codes;
 Q3 full-table aggregate. Timing: median of 5 runs after 1 warm-up. Files-skippable is computed exactly from Delta min/max stats."""
-import json, shutil, statistics, sys, time
+import json
+import shutil
+import statistics
+import time
 from pathlib import Path
-import pyarrow as pa, pyarrow.parquet as pq
+
+import pyarrow as pa
+import pyarrow.parquet as pq
 from deltalake import DeltaTable, write_deltalake
+
 from pricecheck.history import delta_store as D
 
 ROOT = Path(__file__).resolve().parents[1]; W = ROOT / "data/storage_exp"; SRC = ROOT / "data/bench/full"

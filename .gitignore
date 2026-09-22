@@ -31,3 +31,5 @@ data/gold/
 data/dbt_sources/
 data/anomaly/*.parquet
 data/anomaly/*.joblib
+terraform/.terraform/
+data/ci_fixtures/

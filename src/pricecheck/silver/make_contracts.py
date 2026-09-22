@@ -1,10 +1,12 @@
 """Derive v1 contracts from what each real file actually contains, recording deviations from CMS-required columns."""
-import csv, glob, json, yaml
-from pathlib import Path
-from pricecheck.silver import contract as C
-from pricecheck.ingest.profile import open_payload, ROOT
-from pricecheck.silver.model import Decoder
+import csv
 import io
+import json
+
+import yaml
+
+from pricecheck.ingest.profile import ROOT, open_payload
+from pricecheck.silver import contract as C
 
 DEPRECATED = {"2.0.0"}
 

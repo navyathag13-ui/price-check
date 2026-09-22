@@ -1,7 +1,9 @@
 """Generate docs/phase4_report.md from the measured JSON/CSV outputs (numbers are never typed by hand)."""
 import json
 from pathlib import Path
+
 import pandas as pd
+
 ROOT = Path(__file__).resolve().parents[1]; A = ROOT / "data/anomaly"
 fs = json.loads((A / "features_summary.json").read_text()); ev = json.loads((A / "injection_eval.json").read_text())
 rv = json.loads((A / "review_results.json").read_text()); sens = json.loads((A / "peer_threshold_sensitivity.json").read_text())

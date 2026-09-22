@@ -1,7 +1,9 @@
-import json
 from pathlib import Path
+
 from deltalake import DeltaTable
+
 from pricecheck.history import delta_store as D
+
 ROOT = Path(__file__).resolve().parents[1]
 rows = sorted(D.ledger_records(ROOT / "data/delta/ingestion_ledger"), key=lambda r: r["history_version_after"])
 con = D.duck(); p = ROOT / "data/delta/price_history"
