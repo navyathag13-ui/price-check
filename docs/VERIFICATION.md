@@ -20,4 +20,18 @@ Machine: Apple M4 MacBook, macOS 26.5.1. These are spot checks I ran again while
 
 I ran `terraform/cloudshell_deploy.sh` in Azure Cloud Shell (my laptop cannot sign in to this tenant). Evidence is the Cloud Shell output: a first apply created 11 resources and then failed on the SQL server (`ProvisioningDisabled` in `northcentralus`); after moving the SQL server to `westus` and deleting the stub the failed attempt left behind, `Apply complete! Resources: 4 added, 0 changed, 0 destroyed`. The outputs listed in `terraform/README.md` came from that run. I read that output; I have not independently queried Azure from this machine, since the tenant blocks the Azure CLI here.
 
-Not verified: that the SQL free offer applied to the database (check the database's page in the portal), the actual cost so far, and any use of the deployed resources (nothing has been loaded into them).
+### Data loaded into Azure SQL
+
+`python -m pricecheck.serving.load_azure_sql` from my laptop, against the deployed database, printed:
+
+```
+dim_hospital                       21 rows  0.8s
+dim_procedure_code             79,213 rows  29.5s
+mart_price_comparison         128,372 rows  82.4s
+mart_hospital_quality              21 rows  0.4s
+vw_price_spread row count (verified live): 128372
+```
+
+Before this worked I fixed three schema mistakes and made the loader batch its inserts (500 rows per request; the first version sent one row per network round trip and would have taken hours). I tested both fixes against a local SQL Server in Docker first, where the column totals matched the source DuckDB file exactly. On the Azure database itself I have only the loader's own row counts, not a column-by-column comparison.
+
+Not verified: that the SQL free offer applied to the database (check the database's page in the portal), the actual cost so far, and any use of the deployed storage account, Data Factory or Event Hubs (nothing has been put in them).

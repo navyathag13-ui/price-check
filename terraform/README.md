@@ -12,7 +12,7 @@
 
 Things that went wrong and how they were fixed: Azure SQL provisioning is disabled for this subscription in `northcentralus` (`ProvisioningDisabled`), so the SQL server now uses its own `sql_location` variable (default `westus`). The failed attempt left a stub server in `northcentralus` that blocked a same-named server in another region (`InvalidResourceLocation`); `az sql server delete` removed it and the retry succeeded.
 
-Only the infrastructure exists. No data has been uploaded, no pipelines built, and Event Hubs is idle but still billing (Basic tier, about $0.03 per hour). Run `terraform destroy` (or destroy just the Event Hubs namespace) when you don't need it. The commands to run it yourself:
+The four gold summary tables have since been loaded into the SQL database (see `sql/azure_sql/README.md`). Nothing else has been put in the cloud: no data uploaded to the storage account, no pipelines built. Event Hubs is idle but still billing (Basic tier, about $0.03 per hour). Run `terraform destroy` (or destroy just the Event Hubs namespace) when you don't need it. The commands to run it yourself:
 
 ```bash
 cd terraform

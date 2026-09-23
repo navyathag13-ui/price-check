@@ -45,9 +45,7 @@ export AZURE_SQL_PASSWORD="<the password saved above>"
 python -m pricecheck.serving.load_azure_sql
 ```
 This applies `001_schema.sql` + `002_views.sql` and loads `dim_hospital` (21 rows), `dim_procedure_code` (79,213),
-`mart_price_comparison` (128,372), `mart_hospital_quality` (21) from the local dbt-built DuckDB file. **Not run in
-this session** -- no Azure SQL Database exists yet to load into; see README.md "What's verified vs. not" for the
-honest split, same pattern as the RAG project.
+`mart_price_comparison` (128,372), `mart_hospital_quality` (21) from the local dbt-built DuckDB file. **Run on 2026-09-23** against the Terraform-created server (`pricecheck-sql-90608ea1`, `westus`): 21, 79,213, 128,372 and 21 rows loaded in about 2 minutes, and the loader's own live check of `vw_price_spread` returned 128,372 rows. The results are below, together with the schema problems the first real load turned up.
 
 ## Schema issues found by loading real data (2026-09-23)
 
