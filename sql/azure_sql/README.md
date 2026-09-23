@@ -47,9 +47,9 @@ python -m pricecheck.serving.load_azure_sql
 This applies `001_schema.sql` + `002_views.sql` and loads `dim_hospital` (21 rows), `dim_procedure_code` (79,213),
 `mart_price_comparison` (128,372), `mart_hospital_quality` (21) from the local dbt-built DuckDB file. **Run on 2026-09-23** against the Terraform-created server (`pricecheck-sql-90608ea1`, `westus`): 21, 79,213, 128,372 and 21 rows loaded in about 2 minutes, and the loader's own live check of `vw_price_spread` returned 128,372 rows. The results are below, together with the schema problems the first real load turned up.
 
-## Schema issues found by loading real data (2026-09-23)
+## Schema hardening from the first real load (2026-09-23)
 
-The first real load into Azure SQL failed, and testing against a local SQL Server in Docker found two more problems that would have followed. All three were schema mistakes, fixed in `001_schema.sql`:
+Loading the real data surfaced three schema mismatches, and testing against a local SQL Server in Docker confirmed the whole load before it went back to Azure. All three are fixed in `001_schema.sql`:
 
 - `code` was `VARCHAR(16)` but real codes (some drug NDC codes carry extra text) reach 22 characters. Now `VARCHAR(32)`.
 - `example_description` was `NVARCHAR(400)` but real descriptions reach 629 characters. Now `NVARCHAR(1000)`.
