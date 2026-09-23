@@ -49,6 +49,16 @@ This applies `001_schema.sql` + `002_views.sql` and loads `dim_hospital` (21 row
 this session** -- no Azure SQL Database exists yet to load into; see README.md "What's verified vs. not" for the
 honest split, same pattern as the RAG project.
 
+## Schema issues found by loading real data (2026-09-23)
+
+The first real load into Azure SQL failed, and testing against a local SQL Server in Docker found two more problems that would have followed. All three were schema mistakes, fixed in `001_schema.sql`:
+
+- `code` was `VARCHAR(16)` but real codes (some drug NDC codes carry extra text) reach 22 characters. Now `VARCHAR(32)`.
+- `example_description` was `NVARCHAR(400)` but real descriptions reach 629 characters. Now `NVARCHAR(1000)`.
+- SQL Server compares text case-insensitively by default, so two codes that differ only by letter case were rejected as duplicate primary keys. The `code` columns are now case-sensitive (`Latin1_General_100_CS_AS`) so the data loads exactly as it is.
+
+After the fixes, a full local load gave 21 / 79,213 / 128,372 / 21 rows and `vw_price_spread` returned 128,372 rows, and column totals matched the source DuckDB file exactly (for example 29,942,393 priced rows in `mart_price_comparison`).
+
 ## Teardown
 ```bash
 az sql server delete --name $SERVER --resource-group $RG --yes

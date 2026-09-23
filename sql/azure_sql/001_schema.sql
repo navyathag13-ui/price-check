@@ -24,9 +24,9 @@ CREATE TABLE dbo.dim_hospital (
 GO
 
 CREATE TABLE dbo.dim_procedure_code (
-    code                 VARCHAR(16)   NOT NULL,
+    code                 VARCHAR(32) COLLATE Latin1_General_100_CS_AS NOT NULL,   -- case-sensitive: real codes differ only by case
     code_type            VARCHAR(16)   NOT NULL,
-    example_description  NVARCHAR(400) NULL,
+    example_description  NVARCHAR(1000) NULL,
     hospital_count       INT           NOT NULL,
     price_row_count      BIGINT        NOT NULL,
     loaded_at             DATETIME2     NOT NULL DEFAULT SYSUTCDATETIME(),
@@ -35,9 +35,9 @@ CREATE TABLE dbo.dim_procedure_code (
 GO
 
 CREATE TABLE dbo.mart_price_comparison (
-    code                VARCHAR(16)   NOT NULL,
+    code                VARCHAR(32) COLLATE Latin1_General_100_CS_AS NOT NULL,
     code_type           VARCHAR(16)   NOT NULL,
-    example_description NVARCHAR(400) NULL,
+    example_description NVARCHAR(1000) NULL,
     price_type          VARCHAR(16)   NOT NULL,
     n_prices             INT           NOT NULL,
     n_hospitals           INT           NOT NULL,
