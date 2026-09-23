@@ -1,6 +1,6 @@
 # Terraform
 
-**Quickest way to deploy:** in Azure Cloud Shell, `git clone` this repo, `cd price-check/terraform`, then `ALERT_EMAIL=you@example.com ./cloudshell_deploy.sh`. It checks the resource group, generates the SQL password (saved to a git-ignored file, never printed), shows the plan, and asks before applying. The script passes a syntax check but has not been run against Azure yet, for the tenant reason below.
+**Quickest way to deploy:** in Azure Cloud Shell, `git clone` this repo, `cd price-check/terraform`, then `ALERT_EMAIL=you@example.com ./cloudshell_deploy.sh`. It checks the resource group, generates the SQL password (saved to a git-ignored file, never printed), shows the plan, and asks before applying. I ran it this way on 2026-09-23 (details below).
 
 `terraform validate` passes locally (checked this session, Terraform 1.9.8, azurerm provider 4.81.0).
 **Applied on 2026-09-23** from Azure Cloud Shell using `cloudshell_deploy.sh` (this tenant's Conditional Access blocks Azure CLI and Terraform sign-in from a laptop, so Cloud Shell is the only place `apply` works). The final `terraform apply` reported `Apply complete! Resources: 4 added`, after an earlier run created the other 11. `terraform output` returned:
