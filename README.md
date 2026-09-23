@@ -24,7 +24,7 @@ So this is a full pipeline, built in nine phases: download the files politely, c
 |---|---|
 | Language and tooling | Python 3.11, pytest 9 with Hypothesis (property tests), ruff for linting |
 | Ingest | `requests`, streaming parsers (`ijson` for JSON, chunked CSV reading), hash-addressed raw files ("bronze") |
-| Cleaning and contracts | Pydantic, versioned YAML/JSON contracts, a quarantine for rows that fail validation ("silver") |
+| Cleaning and contracts | Pydantic, one versioned YAML contract per hospital, a quarantine for rows that fail validation ("silver") |
 | Storage and history | Parquet with Apache Arrow, Delta Lake (`deltalake` 1.6) with slowly-changing-dimension history and time-travel reports |
 | Query engines | DuckDB 1.5 as the main engine, PySpark 4.2 for the comparison benchmark |
 | Warehouse layer | dbt-core 1.12 with dbt-duckdb, a star schema, 27 dbt tests ("gold") |
@@ -65,7 +65,7 @@ Each phase ended with a generated report of numbers and a short decision record 
 8. Terraform, CI and monitoring
 9. A streaming stretch goal
 
-I found real bugs along the way and kept the before-and-after evidence: one dropped generic prices when reading tall CSVs, one quietly lost data during deduplication, and one broke CI because a folder didn't exist there.
+I found real bugs along the way and kept the before-and-after evidence. The best example: while checking my deduplication step I noticed that generic prices were being lost when reading the tall CSV layout, so I fixed the parser and saved the before and after logs (`docs/phase3_dedupe_fix_*.log`). Another bug only showed up in CI, where a data folder I had assumed existed did not.
 
 ## Status
 All 9 phases complete, including the stretch goal (see DECISIONS.md for the full ADR list: 24 decision records). CI (lint, tests, dbt build against real fixtures, terraform validate) passes on GitHub Actions: https://github.com/navyathag13-ui/price-check/actions
