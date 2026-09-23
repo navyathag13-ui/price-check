@@ -12,6 +12,18 @@ evidence) and `docs/phaseN_report.md` for the generated, numbers-only reports be
 
 **Data findings, not medical or financial advice.** See the API/dashboard disclaimer.
 
+## Highlights
+
+- **41.1 million** price rows from **21 hospitals**, kept as a versioned Delta Lake history you can query as of any past load
+- A full medallion pipeline (raw, validated, warehouse) with per-hospital data contracts, a quarantine for bad rows, and **111 passing tests** including property-based ones
+- An anomaly detector that catches **81.3%** of 54,000 deliberately injected pricing errors
+- Three ways of matching hospital descriptions to billing codes (fuzzy, embeddings, LLM), compared head to head on a labelled test set
+- A Spark versus DuckDB benchmark up to **164.5 million rows**
+- dbt star schema with 27 tests, a FastAPI + GraphQL API, and a Streamlit dashboard
+- Terraform for six Azure services, validated and ready to apply from Azure Cloud Shell
+- 24 written architecture decision records, and a green GitHub Actions pipeline
+
+
 ## Why I built this
 
 Since 2021 US hospitals have had to publish what they charge. In practice that means huge files (some are gigabytes), in different layouts, with different column names, plus plenty of typos and placeholder values. Technically the prices are public. Practically, nobody can compare them. I wanted to find out what it takes to turn that mess into something you can trust and query, and to measure honestly how well each step works.
