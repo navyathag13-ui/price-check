@@ -10,6 +10,12 @@ variable "location" {
   default     = "northcentralus"
 }
 
+variable "sql_location" {
+  description = "Region for the Azure SQL server only. This subscription blocks new SQL servers in northcentralus (ProvisioningDisabled, hit on 2026-09-23), so SQL goes elsewhere; the rest of the stack stays in var.location. Other regions the subscription allows: westus, francecentral, norwayeast, denmarkeast."
+  type        = string
+  default     = "westus"
+}
+
 variable "sql_admin_login" {
   description = "Azure SQL server admin username."
   type        = string

@@ -32,7 +32,7 @@ resource "azurerm_storage_data_lake_gen2_filesystem" "delta" {
 resource "azurerm_mssql_server" "sql" {
   name                         = "pricecheck-sql-${substr(md5(data.azurerm_resource_group.main.id), 0, 8)}"
   resource_group_name          = data.azurerm_resource_group.main.name
-  location                     = var.location
+  location                     = var.sql_location
   version                      = "12.0"
   administrator_login          = var.sql_admin_login
   administrator_login_password = var.sql_admin_password

@@ -24,6 +24,8 @@ fi
 export TF_VAR_sql_admin_password="$(cat .sql_admin_password)"
 export TF_VAR_my_ip="$(curl -s ifconfig.me)"
 export TF_VAR_alert_email="$ALERT_EMAIL"
+# Azure SQL is blocked in northcentralus on this subscription; override with SQL_LOCATION=<region> if needed.
+[ -n "${SQL_LOCATION:-}" ] && export TF_VAR_sql_location="$SQL_LOCATION"
 
 terraform init -input=false
 terraform validate
