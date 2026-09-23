@@ -12,26 +12,60 @@ evidence) and `docs/phaseN_report.md` for the generated, numbers-only reports be
 
 **Data findings, not medical or financial advice.** See the API/dashboard disclaimer.
 
-## Problem statement
+## Why I built this
 
-US hospitals must publish their prices, but the files are huge, inconsistent (tall CSV, wide CSV and JSON layouts), and full of bad values, so nobody can compare prices across hospitals. This project builds the pipeline that makes those files comparable: parse them into one schema with contract checks, keep full price history, flag suspicious prices, and match hospital procedure descriptions to standard codes. The goal was to measure each step's quality honestly instead of assuming it works.
+Since 2021 US hospitals have had to publish what they charge. In practice that means huge files (some are gigabytes), in different layouts, with different column names, plus plenty of typos and placeholder values. Technically the prices are public. Practically, nobody can compare them. I wanted to find out what it takes to turn that mess into something you can trust and query, and to measure honestly how well each step works.
 
-## Results
+So this is a full pipeline, built in nine phases: download the files politely, check them against versioned contracts, load them into one clean schema with the full price history, flag prices that look wrong, match each hospital's own procedure descriptions to standard billing codes, and serve comparisons through an API and a dashboard.
 
-Figures are quoted from the generated reports in `docs/` (each was produced by code in this repo on the real data; they were not re-run when this README was written).
+## Tech stack
 
-| Area | Result | Source |
-|---|---|---|
-| Scale | 21 hospitals; 8.67 GB downloaded; 175,765,358 canonical rows parsed; **41,134,669 rows** in the Delta history table | `docs/phase3_report.md`, `docs/COST_REPORT.md` |
-| Anomaly detection | On 54,000 injected corruptions (thresholds fixed beforehand): rules **81.3%** recall, isolation forest **23.2%**, combined **81.5%**. Weakest case: prices scaled x10 consistently across an item (19.8%). Precision was judged by an AI-labeled review of 103 flagged prices, **not** by a human expert. | `docs/phase4_report.md` |
-| Procedure matching (200-item test set, top-1 accuracy) | rules+fuzzy 0.475, embedding search 0.57, LLM with candidates 0.515, LLM without candidates 0.12. Catch-all codes are hard: 0.0 / 0.227 / 0.152. The tiered strategy auto-resolved 85% of items at 66.5% precision on answered items, and sent the rest to human review. | `docs/phase5_report.md` |
-| Spark vs DuckDB | DuckDB was faster than Spark at every size tested, from 986K to 164.5M rows (one MacBook Air; x2/x4 sizes are single runs on duplicated data). | `docs/phase6_report.md` |
-| CI | Lint, tests, dbt build on real fixtures and `terraform validate` pass on GitHub Actions ([run](https://github.com/navyathag13-ui/price-check/actions/runs/35774815959)). | GitHub |
-| Azure deployment | **Not deployed.** Terraform is written and validated, but `terraform apply` was never run. Cost figures in `docs/COST_REPORT.md` are estimates. | `docs/COST_REPORT.md` |
+| Stage | What I used |
+|---|---|
+| Language and tooling | Python 3.11, pytest 9 with Hypothesis (property tests), ruff for linting |
+| Ingest | `requests`, streaming parsers (`ijson` for JSON, chunked CSV reading), hash-addressed raw files ("bronze") |
+| Cleaning and contracts | Pydantic, versioned YAML/JSON contracts, a quarantine for rows that fail validation ("silver") |
+| Storage and history | Parquet with Apache Arrow, Delta Lake (`deltalake` 1.6) with slowly-changing-dimension history and time-travel reports |
+| Query engines | DuckDB 1.5 as the main engine, PySpark 4.2 for the comparison benchmark |
+| Warehouse layer | dbt-core 1.12 with dbt-duckdb, a star schema, 27 dbt tests ("gold") |
+| Anomaly detection | Rule checks plus scikit-learn IsolationForest |
+| Procedure matching | rapidfuzz (fuzzy), sentence-transformers with FAISS (embeddings), Azure OpenAI `gpt-4.1-mini` (LLM) |
+| Serving | FastAPI with Strawberry GraphQL, Streamlit dashboard, T-SQL views for Azure SQL |
+| Cloud (written, not deployed) | Terraform with the `azurerm` 4.x provider: Data Lake Gen2, Azure SQL, Data Factory, Log Analytics, Application Insights, Event Hubs, a budget alert |
+| Streaming (stretch goal) | Spark Structured Streaming on file-change events |
+| CI | GitHub Actions: ruff, pytest, dbt build against committed fixtures, `terraform validate` |
 
-## How we got here
+## What came out
 
-Built in nine phases, each ending with a generated numbers-only report and an architecture decision record in `DECISIONS.md` (24 in total): (1) source registry and polite downloader, (2) canonical model with versioned contracts and quarantine for bad rows, (3) Delta Lake SCD2 history, (4) anomaly detection, (5) procedure matching by three methods, (6) Spark vs DuckDB and storage experiments, (7) dbt gold layer, FastAPI + GraphQL API and Streamlit dashboard, (8) Terraform, CI and observability, (9) a streaming stretch goal. Several real bugs were found and fixed along the way (for example a data-loss bug in tall-CSV parsing and a missing directory in CI); the before/after evidence is in `docs/`.
+The numbers below come from the reports in `docs/`, which the code in this repo generated from the real files. I also re-checked a few of them on 2026-09-23 (see [`docs/VERIFICATION.md`](docs/VERIFICATION.md)).
+
+**Scale.** 21 hospitals, 8.67 GB of downloaded files, 175,765,358 parsed rows, and **41,134,669 rows** in the final Delta history table (I re-counted this directly and it matched).
+
+**Finding bad prices.** I injected 54,000 fake errors into real rows (prices multiplied by 10 or 100, divided by 10 or 100, placeholders like 999999.99, and so on) with the thresholds fixed beforehand. The rule checks caught **81.3%**, the isolation forest caught **23.2%**, and the two combined caught 81.5%. The weak spot is a price that is scaled by 10 across a whole item consistently, which is only caught 19.8% of the time. For precision I had an AI-assisted review of 103 flagged prices, and I want to be clear that this was not a review by a billing expert.
+
+**Matching descriptions to codes.** On a 200-item test set: fuzzy matching got 47.5% of the top answers right, embedding search 57%, and the LLM (given candidates) 51.5%. The LLM without candidates got just 12%, because it cannot reliably remember exact billing codes. "Catch-all" codes were the hardest of all. The final strategy answers automatically on 85% of items with 66.5% precision on those, and sends the rest to a person.
+
+**DuckDB versus Spark.** DuckDB was faster than Spark at every size I tried, from about 1 million to 164.5 million rows, on one MacBook Air. The gap closes as the data gets close to DuckDB's memory limit. (The two largest sizes are single runs on duplicated data, so treat them as indicative.)
+
+**Tests and CI.** 111 tests pass locally. GitHub Actions passes ([latest run](https://github.com/navyathag13-ui/price-check/actions/runs/35917455577)). One caveat worth knowing: the multi-gigabyte raw data isn't in the repo, so in CI the tests that need it skip themselves and dbt runs against small committed fixtures. A green CI run therefore means the code and the contracts are healthy, not that the full 41 million row pipeline was re-run.
+
+**Cloud.** The Terraform is written and `terraform validate` passes, but I never ran `terraform apply`, so nothing here is deployed to Azure. The cost numbers in `docs/COST_REPORT.md` are estimates.
+
+## How it came together
+
+Each phase ended with a generated report of numbers and a short decision record in `DECISIONS.md` (24 in total) covering what I picked, what I rejected and why.
+
+1. Source registry and a polite, hash-addressed downloader
+2. A canonical data model, contracts, and a quarantine for bad rows
+3. Delta Lake history with time travel
+4. Anomaly detection
+5. Matching descriptions to codes, three ways
+6. Spark versus DuckDB and storage experiments
+7. dbt warehouse layer, API and dashboard
+8. Terraform, CI and monitoring
+9. A streaming stretch goal
+
+I found real bugs along the way and kept the before-and-after evidence: one dropped generic prices when reading tall CSVs, one quietly lost data during deduplication, and one broke CI because a folder didn't exist there.
 
 ## Status
 All 9 phases complete, including the stretch goal (see DECISIONS.md for the full ADR list: 24 decision records). CI (lint, tests, dbt build against real fixtures, terraform validate) passes on GitHub Actions: https://github.com/navyathag13-ui/price-check/actions
