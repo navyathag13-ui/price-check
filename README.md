@@ -25,7 +25,7 @@ evidence) and `docs/phaseN_report.md` for the generated, numbers-only reports be
 
 ## Why I built this
 
-Since 2021 US hospitals have had to publish what they charge. In practice that means huge files (some are gigabytes), in different layouts, with different column names, plus plenty of typos and placeholder values. Technically the prices are public. Practically, nobody can compare them. I wanted to find out what it takes to turn that mess into something you can trust and query, and to measure honestly how well each step works.
+Since 2021 US hospitals have had to publish what they charge. In practice that means huge files (some are gigabytes), in different layouts, with different column names, plus plenty of typos and placeholder values. Technically the prices are public. Practically, nobody can compare them. I wanted to find out what it takes to turn that mess into something you can trust and query, and to measure how well each step works.
 
 So this is a full pipeline, built in nine phases: download the files politely, check them against versioned contracts, load them into one clean schema with the full price history, flag prices that look wrong, match each hospital's own procedure descriptions to standard billing codes, and serve comparisons through an API and a dashboard.
 
