@@ -1,5 +1,7 @@
 # Terraform
 
+**Quickest way to deploy:** in Azure Cloud Shell, `git clone` this repo, `cd price-check/terraform`, then `ALERT_EMAIL=you@example.com ./cloudshell_deploy.sh`. It checks the resource group, generates the SQL password (saved to a git-ignored file, never printed), shows the plan, and asks before applying. The script passes a syntax check but has not been run against Azure yet, for the tenant reason below.
+
 `terraform validate` passes locally (checked this session, Terraform 1.9.8, azurerm provider 4.81.0).
 `terraform plan`/`apply` were **not run** -- same Conditional Access constraint documented throughout this
 project (and the RAG project before it): this tenant blocks non-interactive Azure CLI/SDK auth from outside the

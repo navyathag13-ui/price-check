@@ -20,7 +20,7 @@ evidence) and `docs/phaseN_report.md` for the generated, numbers-only reports be
 - Three ways of matching hospital descriptions to billing codes (fuzzy, embeddings, LLM), compared head to head on a labelled test set
 - A Spark versus DuckDB benchmark up to **164.5 million rows**
 - dbt star schema with 27 tests, a FastAPI + GraphQL API, and a Streamlit dashboard
-- Terraform for six Azure services, validated and ready to apply from Azure Cloud Shell
+- Terraform for six Azure services, validated, with a one-command Cloud Shell deploy script
 - 24 written architecture decision records, and a green GitHub Actions pipeline
 
 
@@ -61,7 +61,7 @@ The numbers below come from the reports in `docs/`, which the code in this repo 
 
 **Tests and CI.** 111 tests pass locally. GitHub Actions passes ([latest run](https://github.com/navyathag13-ui/price-check/actions/runs/35917455577)). One caveat worth knowing: the multi-gigabyte raw data isn't in the repo, so in CI the tests that need it skip themselves and dbt runs against small committed fixtures. A green CI run therefore means the code and the contracts are healthy, not that the full 41 million row pipeline was re-run.
 
-**Cloud.** The Terraform is written and `terraform validate` passes, but I never ran `terraform apply`, so nothing here is deployed to Azure. The cost numbers in `docs/COST_REPORT.md` are estimates.
+**Cloud.** The Terraform is written and `terraform validate` passes, and `terraform/cloudshell_deploy.sh` wraps plan and apply for Azure Cloud Shell. I never ran `terraform apply`, though (my university tenant blocks Terraform sign-in from a laptop), so nothing here is deployed to Azure yet. The cost numbers in `docs/COST_REPORT.md` are estimates.
 
 ## How it came together
 

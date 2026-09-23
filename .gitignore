@@ -33,3 +33,9 @@ data/anomaly/*.parquet
 data/anomaly/*.joblib
 terraform/.terraform/
 data/ci_fixtures/
+
+# Terraform local state, plans and generated secrets
+terraform/.terraform/
+terraform/*.tfstate*
+terraform/tfplan
+terraform/.sql_admin_password
