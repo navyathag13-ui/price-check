@@ -20,7 +20,7 @@ evidence) and `docs/phaseN_report.md` for the generated, numbers-only reports be
 - Three ways of matching hospital descriptions to billing codes (fuzzy, embeddings, LLM), compared head to head on a labelled test set
 - A Spark versus DuckDB benchmark up to **164.5 million rows**
 - dbt star schema with 27 tests, a FastAPI + GraphQL API, and a Streamlit dashboard
-- Terraform for six Azure services, validated, with a one-command Cloud Shell deploy script
+- Terraform for six Azure services, **applied to a real Azure subscription** (15 resources, 2026-09-23) with a one-command Cloud Shell deploy script
 - 24 written architecture decision records, and a green GitHub Actions pipeline
 
 
@@ -43,7 +43,7 @@ So this is a full pipeline, built in nine phases: download the files politely, c
 | Anomaly detection | Rule checks plus scikit-learn IsolationForest |
 | Procedure matching | rapidfuzz (fuzzy), sentence-transformers with FAISS (embeddings), Azure OpenAI `gpt-4.1-mini` (LLM) |
 | Serving | FastAPI with Strawberry GraphQL, Streamlit dashboard, T-SQL views for Azure SQL |
-| Cloud (written, not deployed) | Terraform with the `azurerm` 4.x provider: Data Lake Gen2, Azure SQL, Data Factory, Log Analytics, Application Insights, Event Hubs, a budget alert |
+| Cloud (deployed with Terraform) | Terraform with the `azurerm` 4.x provider: Data Lake Gen2, Azure SQL, Data Factory, Log Analytics, Application Insights, Event Hubs, a budget alert |
 | Streaming (stretch goal) | Spark Structured Streaming on file-change events |
 | CI | GitHub Actions: ruff, pytest, dbt build against committed fixtures, `terraform validate` |
 
@@ -61,7 +61,7 @@ The numbers below come from the reports in `docs/`, which the code in this repo 
 
 **Tests and CI.** 111 tests pass locally. GitHub Actions passes ([latest run](https://github.com/navyathag13-ui/price-check/actions/runs/35917455577)). One caveat worth knowing: the multi-gigabyte raw data isn't in the repo, so in CI the tests that need it skip themselves and dbt runs against small committed fixtures. A green CI run therefore means the code and the contracts are healthy, not that the full 41 million row pipeline was re-run.
 
-**Cloud.** The Terraform is written and `terraform validate` passes, and `terraform/cloudshell_deploy.sh` wraps plan and apply for Azure Cloud Shell. I never ran `terraform apply`, though (my university tenant blocks Terraform sign-in from a laptop), so nothing here is deployed to Azure yet. The cost numbers in `docs/COST_REPORT.md` are estimates.
+**Cloud.** On 2026-09-23 I ran `terraform apply` from Azure Cloud Shell (`terraform/cloudshell_deploy.sh`) and it created all 15 resources in my subscription's `rg-pricecheck` group: a Data Lake Gen2 storage account with `bronze` and `delta` containers, an Azure SQL server and database, Data Factory, Log Analytics, Application Insights, an Event Hubs namespace with a hub and two access rules, and a monthly budget alert. **That is the infrastructure, not the pipeline running in the cloud:** I have not uploaded the data to the storage account, loaded the marts into the SQL database, built Data Factory pipelines or sent events through Event Hubs. The pipeline itself still runs locally. Two things I learned on the way: this subscription blocks new SQL servers in `northcentralus`, so the SQL server lives in `westus` (a separate `sql_location` variable), and a failed create leaves a stub that has to be deleted before retrying. The cost numbers in `docs/COST_REPORT.md` are estimates, and I have not yet confirmed in the portal that the SQL free offer applied.
 
 ## How it came together
 

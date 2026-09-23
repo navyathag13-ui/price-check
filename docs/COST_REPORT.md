@@ -28,9 +28,7 @@ Verified live against real Azure resources (see the RAG project's session, same 
 | Azure AI Content Safety (F0 tier) | A handful of live screening calls | $0 -- F0 is free up to 5,000 records/month, nowhere near reached |
 | Resource group / provider registration | Setup only | $0 |
 
-**Not yet incurred (documented, not run this session):** Azure SQL Database (free offer, expected $0 -- see
-`sql/azure_sql/README.md`), ADLS Gen2, Data Factory, Log Analytics/App Insights (all in `terraform/main.tf`,
-`terraform apply` not run -- see `terraform/README.md` for why and the exact commands to run it yourself).
+**Deployed 2026-09-23 (Terraform `apply` from Azure Cloud Shell, 15 resources):** ADLS Gen2, Azure SQL Database, Data Factory, Log Analytics, Application Insights, Event Hubs and a budget alert, all in `terraform/main.tf`. No actual charges have been read from the Azure portal for these yet, so every figure below is still an estimate. Two specifics: the SQL database is created in the free-offer shape (serverless GP_S_Gen5_1), but the free offer is a subscription-level benefit and I have not confirmed in the portal that it applied to this database; and Event Hubs Basic bills about $0.03 per hour while it exists, roughly $22 a month if left running, which would trip the $10 monthly budget alert.
 
 ## Estimated cost once the rest of Terraform is applied
 

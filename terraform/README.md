@@ -3,9 +3,16 @@
 **Quickest way to deploy:** in Azure Cloud Shell, `git clone` this repo, `cd price-check/terraform`, then `ALERT_EMAIL=you@example.com ./cloudshell_deploy.sh`. It checks the resource group, generates the SQL password (saved to a git-ignored file, never printed), shows the plan, and asks before applying. The script passes a syntax check but has not been run against Azure yet, for the tenant reason below.
 
 `terraform validate` passes locally (checked this session, Terraform 1.9.8, azurerm provider 4.81.0).
-`terraform plan`/`apply` were **not run** -- same Conditional Access constraint documented throughout this
-project (and the RAG project before it): this tenant blocks non-interactive Azure CLI/SDK auth from outside the
-portal/Cloud Shell, and `terraform apply` needs that auth. Run it yourself in Cloud Shell:
+**Applied on 2026-09-23** from Azure Cloud Shell using `cloudshell_deploy.sh` (this tenant's Conditional Access blocks Azure CLI and Terraform sign-in from a laptop, so Cloud Shell is the only place `apply` works). The final `terraform apply` reported `Apply complete! Resources: 4 added`, after an earlier run created the other 11. `terraform output` returned:
+
+- storage account `pricecheckadls90608e` (containers `bronze` and `delta`)
+- SQL server `pricecheck-sql-90608ea1.database.windows.net` (database `pricecheck`)
+- Data Factory `pricecheck-adf`
+- Event Hubs namespace `pricecheck-eh-90608ea1`
+
+Things that went wrong and how they were fixed: Azure SQL provisioning is disabled for this subscription in `northcentralus` (`ProvisioningDisabled`), so the SQL server now uses its own `sql_location` variable (default `westus`). The failed attempt left a stub server in `northcentralus` that blocked a same-named server in another region (`InvalidResourceLocation`); `az sql server delete` removed it and the retry succeeded.
+
+Only the infrastructure exists. No data has been uploaded, no pipelines built, and Event Hubs is idle but still billing (Basic tier, about $0.03 per hour). Run `terraform destroy` (or destroy just the Event Hubs namespace) when you don't need it. The commands to run it yourself:
 
 ```bash
 cd terraform
