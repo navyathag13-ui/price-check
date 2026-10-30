@@ -18,7 +18,7 @@ evidence) and `docs/phaseN_report.md` for the generated, numbers-only reports be
 - An anomaly detector that catches **81.3%** of 54,000 deliberately injected pricing errors
 - Three ways of matching hospital descriptions to billing codes (fuzzy, embeddings, LLM), compared head to head on a labelled test set
 - A Spark versus DuckDB benchmark up to **164.5 million rows**
-- dbt star schema with 27 tests, a FastAPI + GraphQL API, and a Streamlit dashboard
+- dbt star schema with 27 tests, a FastAPI + GraphQL API, a Flask REST API, and a Streamlit dashboard
 - Terraform for six Azure services, **applied to a real Azure subscription** (15 resources, 2026-09-23), with the serving tables loaded into Azure SQL (about 128,000 rows in the largest)
 - 24 written architecture decision records, and a green GitHub Actions pipeline
 
@@ -41,7 +41,7 @@ So this is a full pipeline, built in nine phases: download the files politely, c
 | Warehouse layer | dbt-core 1.12 with dbt-duckdb, a star schema, 27 dbt tests ("gold") |
 | Anomaly detection | Rule checks plus scikit-learn IsolationForest |
 | Procedure matching | rapidfuzz (fuzzy), sentence-transformers with FAISS (embeddings), Azure OpenAI `gpt-4.1-mini` (LLM) |
-| Serving | FastAPI with Strawberry GraphQL, Streamlit dashboard, T-SQL views for Azure SQL |
+| Serving | FastAPI with Strawberry GraphQL, a Flask REST API with a pandas compare endpoint, Streamlit dashboard, T-SQL views for Azure SQL |
 | Cloud (deployed with Terraform) | Terraform with the `azurerm` 4.x provider: Data Lake Gen2, Azure SQL, Data Factory, Log Analytics, Application Insights, Event Hubs, a budget alert |
 | Streaming (stretch goal) | Spark Structured Streaming on file-change events |
 | CI | GitHub Actions: ruff, pytest, dbt build against committed fixtures, `terraform validate` |
@@ -58,7 +58,7 @@ The numbers below come from the reports in `docs/`, which the code in this repo 
 
 **DuckDB versus Spark.** DuckDB was faster than Spark at every size I tried, from about 1 million to 164.5 million rows, on one MacBook Air, and the gap narrows as the data approaches DuckDB's memory limit. (The two largest sizes are single runs on duplicated data, so treat them as indicative.)
 
-**Tests and CI.** 111 tests pass locally, and GitHub Actions passes ([latest run](https://github.com/navyathag13-ui/price-check/actions/runs/35917455577)). CI runs lint, the tests that don't need the multi-gigabyte raw files, `dbt build` against committed fixtures, and `terraform validate`; the data-dependent tests run on the full dataset locally.
+**Tests and CI.** 127 tests pass locally, and GitHub Actions passes ([latest run](https://github.com/navyathag13-ui/price-check/actions/runs/35917455577)). CI runs lint, the tests that don't need the multi-gigabyte raw files, `dbt build` against committed fixtures, and `terraform validate`; the data-dependent tests run on the full dataset locally.
 
 **Cloud.** On 2026-09-23 I ran `terraform apply` from Azure Cloud Shell (`terraform/cloudshell_deploy.sh`) and it created all 15 resources in my subscription's `rg-pricecheck` group: a Data Lake Gen2 storage account with `bronze` and `delta` containers, an Azure SQL server and database, Data Factory, Log Analytics, Application Insights, an Event Hubs namespace with a hub and two access rules, and a monthly budget alert. I then loaded the four gold summary tables into the Azure SQL database (21, 79,213, 128,372 and 21 rows), and the T-SQL view returned 128,372 rows live from Azure. The full pipeline and the 41-million-row history run locally, and the small serving tables live in Azure SQL. Next up: uploading the Delta history to the storage account and scheduling daily loads with Data Factory. Along the way I found that this subscription restricts new SQL servers in `northcentralus`, so the SQL server lives in `westus` (a separate `sql_location` variable). Cost estimates are in `docs/COST_REPORT.md`.
 
@@ -91,6 +91,7 @@ python -m pricecheck.history.incremental       # Delta SCD2 history
 cd dbt/pricecheck && dbt build                 # gold layer
 streamlit run ../../dashboard/app.py           # dashboard
 uvicorn pricecheck.serving.api:app --reload    # API (REST + /graphql)
+flask --app pricecheck.serving.flask_api run --port 8001   # Flask REST API (same data, plus /procedures/compare)
 ```
 
 See `DECISIONS.md`, `docs/`, and `dbt/README.md` for details on each phase.

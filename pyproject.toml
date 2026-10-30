@@ -11,7 +11,7 @@ dev = [
     "duckdb", "deltalake",
     "rapidfuzz", "faiss-cpu", "scikit-learn", "joblib",
     "openai", "python-dotenv",
-    "fastapi", "httpx", "uvicorn[standard]", "strawberry-graphql", "pymssql",
+    "fastapi", "httpx", "uvicorn[standard]", "strawberry-graphql", "pymssql", "flask",
     "psutil",
     "ruff",
 ]
