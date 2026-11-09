@@ -1,6 +1,19 @@
 # Price Check
 
-A reproducible data-engineering pipeline for US hospital price-transparency files: ingest, validate against
+**The question:** US hospitals must publish their prices, but the files are too big and too messy to compare. Can they be turned into prices a patient or employer can actually compare and trust?
+
+**The answer:** yes, and the gap they reveal is large. For the same scan, the self-pay cash price differs by **11 to 21 times** between the cheapest and dearest of 19 hospitals. Even inside Des Moines, a brain MRI is **$538** at UnityPoint Iowa Methodist and **$3,676** at MercyOne Des Moines.
+
+| Procedure (cash price, median per hospital, flagged prices removed) | Hospitals | Lowest | Median | Highest | Spread |
+|---|---|---|---|---|---|
+| MRI brain, no contrast (70551) | 19 | $385 | $1,643 | $4,698 | 12.2x |
+| MRI knee or leg joint, no contrast (73721) | 19 | $438 | $1,665 | $4,985 | 11.4x |
+| CT abdomen and pelvis, with contrast (74177) | 19 | $526 | $3,217 | $11,088 | 21.1x |
+| Chest X-ray, 2 views (71046) | 19 | $46 | $232 | $899 | 19.3x |
+
+Across the 7 Iowa hospitals alone the spread is still 5.7 to 7.1 times. Reproduce with `python scripts/price_spread.py` (add `--state IA` for Iowa). These are list cash prices, not what an insured patient pays, and 21 hospitals are a sample, not a market.
+
+**How:** a reproducible data-engineering pipeline for US hospital price-transparency files: ingest, validate against
 versioned contracts, normalize into one canonical schema with full history (Delta Lake, SCD2), detect suspicious
 prices, match procedures to standard codes across three methods, and serve price comparisons through a dbt gold
 layer, a FastAPI + GraphQL API, and a Streamlit dashboard.
